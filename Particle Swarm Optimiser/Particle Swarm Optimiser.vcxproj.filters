@@ -42,6 +42,9 @@
     <ClInclude Include="src\shippingproblem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\optimiserlogging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -60,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\shippingproblem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\optimiserlogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

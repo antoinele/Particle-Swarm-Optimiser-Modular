@@ -53,7 +53,7 @@ shippingproblem::shippingproblem(string csvfile) : testdata()
 		testdata.push_back(linedata);
 	}
 
-	pso::print_vecvec<double>(&testdata);
+	//pso::print_vecvec<double>(&testdata);
 }
 
 double shippingproblem::predict_load(vector<double>* historical_data, coordinate* weights)

@@ -1,22 +1,26 @@
-#ifndef OPTIMISER_H
-#define OPTIMISER_H
+#pragma once
 
 #include "psotypes.h"
 #include "problem.h"
 #include "particle.h"
+#include "optimiserlogging.h"
 
 #include <vector>
 #include <functional>
 #include <atomic>
 
+using namespace pso;
 using namespace std;
 
 namespace pso {
+
+	//class optimiserlogging;
 
 	class particle;
 
     class optimiser : public enable_shared_from_this<optimiser>
     {
+		friend class optimiserlogging;
     private:
 		shared_ptr<problem> _problem;
 		optimiser(shared_ptr<problem> problem);
@@ -35,10 +39,19 @@ namespace pso {
 		uint64_t seed;
 		atomic_uint seed_count;
 
+		int n_threads = 1;
+
+		shared_ptr<optimiserlogging> logger;
+
+#pragma region run options
+		uint32_t max_cycles = numeric_limits<uint32_t>::max();
+		uint32_t max_runtime = numeric_limits<uint32_t>::max();
+		double target_fitness;
+#pragma endregion
+
     public:
         double evaluator(coordinate position);
 
-		
 		// Return true if A is better than B
 		bool comparator(double a, double b);
 
@@ -55,8 +68,11 @@ namespace pso {
 
 		void init_simulation();
 
-		double run_simulation(int n_steps);
-		double run_until(double targetfitness, int n_steps);
+		void run_simulation();
+
+		void set_max_cycles(uint32_t max_cycles) { this->max_cycles = max_cycles; }
+		void set_max_runtime(uint32_t max_runtime) { this->max_runtime = max_runtime; }
+		void set_target_fitness(double target_fitness) { this->target_fitness = target_fitness; }
 
 		void enable_parallel(int n_threads);
 
@@ -69,11 +85,11 @@ namespace pso {
 			shared_ptr<optimiser> o(new optimiser(problem));
 
 			return move(o);
+
+			//return make_shared<optimiser>(problem);
 		}
 
 		virtual ~optimiser();
     };
 
 }
-
-#endif

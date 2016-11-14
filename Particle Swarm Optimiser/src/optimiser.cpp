@@ -7,44 +7,55 @@
 #include <vector>
 #include <ctime>
 #include <iomanip>
-
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 using namespace pso;
 using namespace std;
+
+#define CYCLE_SIZE 100
 
 optimiser::optimiser(shared_ptr<pso::problem> problem) 
                      : _problem(problem)
 {
 	n_dimensions = _problem->bounds().size();
+	
+	logger = make_shared<optimiserlogging>();
+	logger->setoptimiser(shared_from_this());
+
+	if (comparator(numeric_limits<double>::min(), numeric_limits<double>::max()))
+		target_fitness = numeric_limits<double>::min();
+	else
+		target_fitness = numeric_limits<double>::max();
 
 	set_seed(time(NULL));
 }
 
 optimiser::~optimiser() {
-	double maxvel = 0, minvel = 0;
+	//double maxvel = 0, minvel = 0;
 
-	for (auto p : particles)
-	{
-		auto pv(p->velocity());
+	//for (auto p : particles)
+	//{
+	//	auto pv(p->velocity());
 
-		double v = 0;
+	//	double v = 0;
 
-		for (double vx : pv)
-		{
-			v += vx * vx;
-		}
+	//	for (double vx : pv)
+	//	{
+	//		v += vx * vx;
+	//	}
 
-		v = sqrt(v);
+	//	v = sqrt(v);
 
-		if (v > maxvel)
-			maxvel = v;
+	//	if (v > maxvel)
+	//		maxvel = v;
 
-		if (v < minvel)
-			minvel = v;
-	}
+	//	if (v < minvel)
+	//		minvel = v;
+	//}
 
-	cerr << "Max vel: " << maxvel << ", Min vel: " << minvel << endl;
+	//cerr << "Max vel: " << maxvel << ", Min vel: " << minvel << endl;
 }
 
 double optimiser::evaluator(coordinate position)
@@ -140,68 +151,52 @@ void optimiser::init_simulation() {
 	}
 }
 
-double optimiser::run_simulation(int n_steps)
+void pso::optimiser::run_simulation()
 {
-	for (int i = 0; i < n_steps; i++)
-	{
-		//cerr <<"Cycle: " << setw((streamsize)ceil(log10(n_steps))) << i << ", ";
-		do_cycle();
-		
-		/*auto bs = best_solution();
+	auto starttime = chrono::steady_clock().now();
+	uint32_t cyclecount = 0;
 
-		double curfitness = bs.second;
-		cerr << "Fitness: " << setw(10) << setprecision(10) << curfitness << "\r";
-
-		cerr.flush();
-
-		if (comparator(curfitness, g_best_fitness))
+	while (1) {
+		for (int i = 0; i < CYCLE_SIZE; i++)
 		{
-			g_best = bs.first;
-			g_best_fitness = bs.second;
-		}*/
+			do_cycle();
+		}
+
+		logger->dorecord(cyclecount);
+
+		double curfitness = best_solution().second;
+		auto curtime = chrono::steady_clock().now();
+		cyclecount += CYCLE_SIZE;
+
+		// stop if the target fitness has been reached
+		if (target_fitness < numeric_limits<double>::max() && comparator(curfitness, target_fitness)) {
+			//cerr << "Hit target fitness." << endl;
+			break;
+		}
+
+		// stop if the max time has been reached
+		chrono::duration<double> elapsed_time = chrono::duration_cast<chrono::duration<double>>(curtime - starttime);
+		if (elapsed_time.count() >= max_runtime) {
+			//cerr << "Hit max runtime." << endl;
+			break;
+		}
+
+		// stop if the maximum number of cycles has been reached
+		if (cyclecount >= max_cycles) {
+			break;
+		}
 	}
 
-	//cerr << endl;
+	auto endtime = chrono::steady_clock().now();
+	chrono::duration<double> runtime = chrono::duration_cast<chrono::duration<double>>(endtime - starttime);
 
-	return best_solution().second;
-}
-
-double optimiser::run_until(double targetfitness, int n_steps)
-{
-	cerr << "Don't use this.";
-	exit(1);
-//	for (int i = 0; i < n_steps; i++)
-//	{
-//		cerr << "Cycle: " << setw((streamsize)ceil(log10(n_steps))) << i << ", ";
-//		do_cycle();
-///*
-//		auto bs = best_solution();
-//
-//		double curfitness = bs.second;
-//		cerr << "Fitness: " << setw(10) << setprecision(10) << curfitness << "\r";
-//
-//		cerr.flush();
-//
-//		if (comparator(curfitness, g_best_fitness))
-//		{
-//			g_best = bs.first;
-//			g_best_fitness = bs.second;
-//		}*/
-//
-//		if (comparator(g_best_fitness, targetfitness))
-//		{
-//			break;
-//		}
-//	}
-//
-//	cerr << endl;
-//
-//	return best_solution().second;
+	cerr << "Cycles taken: " << cyclecount << endl;
+	cerr << "Total run time: " << runtime.count() << " seconds" << endl;
 }
 
 void optimiser::enable_parallel(int parallel_jobs)
 {
-	//n_threads = parallel_jobs;
+	n_threads = parallel_jobs;
 }
 
 void optimiser::connect_neighbourhood(int average_neighbours)
@@ -240,9 +235,65 @@ void optimiser::connect_neighbourhood(int average_neighbours)
 	}
 }
 
+void calcRanges(int &min, int &max, int n_threads, int n_particles, int thread_n)
+{
+	int ppt = n_particles + 1 / n_threads;
+	min = ppt * thread_n;
+	max = min + ppt - 1;
+
+	if (thread_n == n_threads - 1)
+	{
+		max = n_particles - 1;
+	}
+}
+
 void optimiser::do_cycle()
 {
-	#pragma loop(hint_parallel(8))
+	vector<unique_ptr<thread>> threads(n_threads);
+	for (int n = 0; n < n_threads; n++)
+	{
+		unique_ptr<thread> t = make_unique<thread>([this](int thread_n) {
+			int min, max;
+			
+			calcRanges(min, max, n_threads, (int)particles.size(), thread_n);
+
+			for (int i = min; i <= max; ++i)
+			{
+				particles[i]->move_step();
+			}
+		}, n);
+
+		threads.push_back(move(t));
+	}
+
+	for (int n = 0; n < n_threads; n++)
+	{
+		threads[n]->join();
+	}
+
+	threads.clear();
+
+	for (int n = 0; n < n_threads; n++)
+	{
+		unique_ptr<thread> t = make_unique<thread>([this](int thread_n) {
+			int min, max;
+
+			calcRanges(min, max, n_threads, (int)particles.size(), thread_n);
+
+			for (int i = min; i <= max; ++i)
+			{
+				particles[i]->end_step();
+			}
+		}, n);
+
+		threads.push_back(move(t));
+	}
+
+	for (int n = 0; n < n_threads; n++)
+	{
+		threads[n]->join();
+	}
+	/*#pragma loop(hint_parallel(8))
 	for (int i = 0; i < particles.size(); ++i)
 	{
 		particles[i]->move_step();
@@ -252,7 +303,7 @@ void optimiser::do_cycle()
 	for (int i = 0; i < particles.size(); ++i)
 	{
 		particles[i]->end_step();
-	}
+	}*/
 
 	/*for (auto particle : particles)
 	{
