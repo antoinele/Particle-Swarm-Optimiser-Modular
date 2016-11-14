@@ -12,7 +12,7 @@ private:
 	int dimensions;
 	vector<vector<double>> testdata;
 
-	double predict_load(vector<double>* historical_data, coordinate* weights);
+	//double predict_load(vector<double>::iterator hd_start, vector<double>::iterator hd_end, coordinate* weights);
 
 public:
 	shippingproblem(string csvfile);

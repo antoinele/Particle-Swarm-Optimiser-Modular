@@ -21,8 +21,8 @@ optimiser::optimiser(shared_ptr<pso::problem> problem)
 {
 	n_dimensions = _problem->bounds().size();
 	
-	logger = make_shared<optimiserlogging>();
-	logger->setoptimiser(shared_from_this());
+	//logger = make_shared<optimiserlogging>();
+	//logger->setoptimiser(shared_from_this());
 
 	if (comparator(numeric_limits<double>::min(), numeric_limits<double>::max()))
 		target_fitness = numeric_limits<double>::min();
@@ -86,6 +86,7 @@ void optimiser::add_solution(coordinate position)
 void optimiser::add_solution(coordinate position, coordinate velocity)
 {
     shared_ptr<particle> particle(new particle(shared_from_this(), position, velocity));
+	//shared_ptr<particle> particle = make_shared<pso::particle>(shared_from_this(), position, velocity);
 
 	if (!_problem->is_valid(position)) {
 		cerr << "Invalid solution added" << endl;
@@ -162,7 +163,7 @@ void pso::optimiser::run_simulation()
 			do_cycle();
 		}
 
-		logger->dorecord(cyclecount);
+		_logger->dorecord(cyclecount);
 
 		double curfitness = best_solution().second;
 		auto curtime = chrono::steady_clock().now();
@@ -235,9 +236,9 @@ void optimiser::connect_neighbourhood(int average_neighbours)
 	}
 }
 
-void calcRanges(int &min, int &max, int n_threads, int n_particles, int thread_n)
+inline void calcRanges(int &min, int &max, int n_threads, int n_particles, int thread_n)
 {
-	int ppt = n_particles + 1 / n_threads;
+	int ppt = (n_particles + 1) / n_threads;
 	min = ppt * thread_n;
 	max = min + ppt - 1;
 
@@ -247,21 +248,35 @@ void calcRanges(int &min, int &max, int n_threads, int n_particles, int thread_n
 	}
 }
 
+void optimiser::do_move_step(optimiser* op, int thread_n) {
+	int min, max;
+
+	calcRanges(min, max, op->n_threads, (int)op->particles.size(), thread_n);
+
+	for (int i = min; i <= max; ++i)
+	{
+		op->particles[i]->move_step();
+	}
+}
+
+void optimiser::do_end_step(optimiser* op, int thread_n) {
+	int min, max;
+
+	calcRanges(min, max, op->n_threads, (int)op->particles.size(), thread_n);
+
+	for (int i = min; i <= max; ++i)
+	{
+		op->particles[i]->end_step();
+	}
+}
+
 void optimiser::do_cycle()
 {
-	vector<unique_ptr<thread>> threads(n_threads);
+	vector<unique_ptr<thread>> threads;
+	threads.reserve(n_threads);
 	for (int n = 0; n < n_threads; n++)
 	{
-		unique_ptr<thread> t = make_unique<thread>([this](int thread_n) {
-			int min, max;
-			
-			calcRanges(min, max, n_threads, (int)particles.size(), thread_n);
-
-			for (int i = min; i <= max; ++i)
-			{
-				particles[i]->move_step();
-			}
-		}, n);
+		unique_ptr<thread> t = make_unique<thread>(&do_move_step, this, n);
 
 		threads.push_back(move(t));
 	}
@@ -272,19 +287,11 @@ void optimiser::do_cycle()
 	}
 
 	threads.clear();
+	threads.reserve(n_threads);
 
 	for (int n = 0; n < n_threads; n++)
 	{
-		unique_ptr<thread> t = make_unique<thread>([this](int thread_n) {
-			int min, max;
-
-			calcRanges(min, max, n_threads, (int)particles.size(), thread_n);
-
-			for (int i = min; i <= max; ++i)
-			{
-				particles[i]->end_step();
-			}
-		}, n);
+		unique_ptr<thread> t = make_unique<thread>(&do_end_step, this, n);
 
 		threads.push_back(move(t));
 	}

@@ -12,5 +12,5 @@ namespace pso {
 	typedef function<double(coordinate)> evaluator_fn;
 	// typedef double (*evaluator_fn)();
 	typedef function<double()> rand_fn;
-	typedef mt19937_64 pso_rng;
+	typedef mt19937 pso_rng;
 }

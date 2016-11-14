@@ -56,21 +56,22 @@ shippingproblem::shippingproblem(string csvfile) : testdata()
 	//pso::print_vecvec<double>(&testdata);
 }
 
-double shippingproblem::predict_load(vector<double>* historical_data, coordinate* weights)
-{
-	assert(historical_data->size() == weights->size());
-
-	double load = 0;
-
-	for (int i = 0; i < historical_data->size(); ++i)
-	{
-		load += historical_data->at(i) * weights->at(i);
-	}
-
-	//load /= historical_data->size();
-
-	return load;
-}
+//double shippingproblem::predict_load(vector<double>::iterator hd_start, vector<double>::iterator hd_end, coordinate* weights)
+//{
+//	//assert(historical_data->size() == weights->size());
+//
+//	double load = 0;
+//
+//	//for (int i = 0; i < historical_data->size(); ++i)
+//	for(auto i = hd_start, j = weights->begin(); i != hd_end; ++i, ++j)
+//	{
+//		load += (*i) * (*j);
+//	}
+//
+//	//load /= historical_data->size();
+//
+//	return load;
+//}
 
 vector<vector<double>> shippingproblem::bounds()
 {
@@ -97,15 +98,27 @@ double shippingproblem::evaluate(coordinate c)
 	size_t testdatasize = testdata.size();
 
 	assert(testdatasize > 0);
+	assert(testdata[0].size() - 1 == c.size());
 
 	for (int i = 0; i < testdatasize; ++i)
 	{
 		auto first = testdata[i].begin() + 1,
 			 last = testdata[i].end();
 
-		vector<double> histdata(first, last);
+		//vector<double> histdata(first, last);
 
-		double pload = predict_load(&histdata, &c);
+		//double pload = predict_load(first, last, &c);
+		//double pload = predict_load(&histdata, &c);
+
+		double pload = 0;
+		
+		//for (int i = 0; i < historical_data->size(); ++i)
+		for(auto i = first, j = c.begin(); i != last; ++i, ++j)
+		{
+			pload += (*i) * (*j);
+		}
+		
+		//load /= historical_data->size();
 
 		// subtract the actual value to work out wastage
 		pload -= testdata[i][0];

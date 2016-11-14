@@ -41,13 +41,16 @@ namespace pso {
 
 		int n_threads = 1;
 
-		shared_ptr<optimiserlogging> logger;
+		shared_ptr<optimiserlogging> _logger;
 
 #pragma region run options
 		uint32_t max_cycles = numeric_limits<uint32_t>::max();
 		uint32_t max_runtime = numeric_limits<uint32_t>::max();
 		double target_fitness;
 #pragma endregion
+
+		static void do_move_step(optimiser* op, int thread_n);
+		static void do_end_step(optimiser* op, int thread_n);
 
     public:
         double evaluator(coordinate position);
@@ -80,13 +83,17 @@ namespace pso {
 			return _problem;
 		}
 
+		shared_ptr<optimiserlogging> logger() {
+			return _logger;
+		}
+
 		static shared_ptr<optimiser> create_optimiser(shared_ptr<pso::problem> problem)
 		{
 			shared_ptr<optimiser> o(new optimiser(problem));
 
-			return move(o);
-
-			//return make_shared<optimiser>(problem);
+			o->_logger = make_shared<optimiserlogging>(o);
+			
+			return o;
 		}
 
 		virtual ~optimiser();

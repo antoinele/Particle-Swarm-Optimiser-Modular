@@ -97,7 +97,7 @@ vector<coordinate> pso::generate_solutions(problem * prob, int num_solutions, in
 	vector<coordinate> solutions(num_solutions);
 	//solutions.reserve(num_solutions);
 
-	mt19937_64 gen(seed);
+	pso_rng gen(seed);
 
 	vector<vector<double>> bounds = prob->bounds();
 

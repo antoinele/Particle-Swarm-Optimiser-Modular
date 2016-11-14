@@ -25,12 +25,14 @@ namespace pso {
 		uint32_t prev_count = 0;
 		uint32_t count_offset = 0;
 	public:
-		optimiserlogging();
+		optimiserlogging(weak_ptr<optimiser> optimiser);
 		~optimiserlogging();
 
-		void setoptimiser(weak_ptr<pso::optimiser> optimiser);
+		//void setoptimiser(weak_ptr<pso::optimiser> optimiser);
 
 		void dorecord(uint32_t cycle);
+
+		void writeout(string csvfile);
 	};
 
 }

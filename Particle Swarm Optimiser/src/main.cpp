@@ -108,6 +108,7 @@ int main(int argc, char const *argv[])
 	// Configure optimiser
     shared_ptr<pso::optimiser> optimiser(pso::optimiser::create_optimiser(problem));
 	optimiser->set_seed(seed);
+	optimiser->enable_parallel(8);
 
 	{	// Create initial solutions
 		vector<coordinate> solutions(generate_solutions(problem.get(), num_solutions, seed));
@@ -209,5 +210,8 @@ int main(int argc, char const *argv[])
 	continuedone: ;
 	}
 exit:
+
+	optimiser->logger()->writeout("performancedata.csv");
+
     return 0;
 }

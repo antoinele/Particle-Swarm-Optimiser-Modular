@@ -1,10 +1,13 @@
 #include "optimiserlogging.h"
 #include "optimiser.h"
 
+#include <iostream>
+#include <fstream>
+
 using namespace pso;
 using namespace std;
 
-optimiserlogging::optimiserlogging() //: op(optimiser)
+optimiserlogging::optimiserlogging(weak_ptr<optimiser> optimiser) : op(optimiser)
 {
 	//op = optimiser;
 }
@@ -13,10 +16,10 @@ optimiserlogging::~optimiserlogging()
 {
 }
 
-void optimiserlogging::setoptimiser(weak_ptr<optimiser> optimiser)
-{
-	op = move(optimiser);
-}
+//void optimiserlogging::setoptimiser(weak_ptr<optimiser> optimiser)
+//{
+//	op = move(optimiser);
+//}
 
 void optimiserlogging::dorecord(uint32_t cycle)
 {
@@ -64,4 +67,23 @@ void optimiserlogging::dorecord(uint32_t cycle)
 	r.worst = worst;
 
 	records.push_back(r);
+}
+
+void pso::optimiserlogging::writeout(string csvfile)
+{
+	ofstream logfile(csvfile.c_str(), ofstream::trunc);
+
+	logfile << "cycle,best,average,worst" << endl;
+
+	for (auto r : records)
+	{
+		logfile
+			<< r.cycle << ","
+			<< r.best << ","
+			<< r.average << ","
+			<< r.worst << ","
+			<< endl;
+	}
+
+	logfile.close();
 }
