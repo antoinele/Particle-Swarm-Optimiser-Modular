@@ -9,7 +9,6 @@
 #include <iomanip>
 #include <chrono>
 #include <iostream>
-#include <thread>
 
 using namespace pso;
 using namespace std;
@@ -33,29 +32,7 @@ optimiser::optimiser(shared_ptr<pso::problem> problem)
 }
 
 optimiser::~optimiser() {
-	//double maxvel = 0, minvel = 0;
-
-	//for (auto p : particles)
-	//{
-	//	auto pv(p->velocity());
-
-	//	double v = 0;
-
-	//	for (double vx : pv)
-	//	{
-	//		v += vx * vx;
-	//	}
-
-	//	v = sqrt(v);
-
-	//	if (v > maxvel)
-	//		maxvel = v;
-
-	//	if (v < minvel)
-	//		minvel = v;
-	//}
-
-	//cerr << "Max vel: " << maxvel << ", Min vel: " << minvel << endl;
+	threads_exit();
 }
 
 double optimiser::evaluator(coordinate position)
@@ -85,8 +62,8 @@ void optimiser::add_solution(coordinate position)
 
 void optimiser::add_solution(coordinate position, coordinate velocity)
 {
-    shared_ptr<particle> particle(new particle(shared_from_this(), position, velocity));
-	//shared_ptr<particle> particle = make_shared<pso::particle>(shared_from_this(), position, velocity);
+    //shared_ptr<particle> particle(new particle(shared_from_this(), position, velocity));
+	shared_ptr<particle> particle = make_shared<pso::particle>(shared_from_this(), position, velocity);
 
 	if (!_problem->is_valid(position)) {
 		cerr << "Invalid solution added" << endl;
@@ -157,6 +134,8 @@ void pso::optimiser::run_simulation()
 	auto starttime = chrono::steady_clock().now();
 	uint32_t cyclecount = 0;
 
+	threads_reset();
+
 	while (1) {
 		for (int i = 0; i < CYCLE_SIZE; i++)
 		{
@@ -188,6 +167,8 @@ void pso::optimiser::run_simulation()
 		}
 	}
 
+	threads_exit();
+
 	auto endtime = chrono::steady_clock().now();
 	chrono::duration<double> runtime = chrono::duration_cast<chrono::duration<double>>(endtime - starttime);
 
@@ -198,6 +179,16 @@ void pso::optimiser::run_simulation()
 void optimiser::enable_parallel(int parallel_jobs)
 {
 	n_threads = parallel_jobs;
+
+	//threads.clear();
+	//thread_state = thread_state::idle;
+
+	//for (int i = 0; i < n_threads; ++i)
+	//{
+	//	//thread t(&thread_handler, this, i);
+	//	auto t = make_unique<thread>(&thread_handler, this, i);
+	//	threads.push_back(t);
+	//}
 }
 
 void optimiser::connect_neighbourhood(int average_neighbours)
@@ -248,6 +239,58 @@ inline void calcRanges(int &min, int &max, int n_threads, int n_particles, int t
 	}
 }
 
+void pso::optimiser::threads_reset()
+{
+	threads_exit();
+
+	thread_state = thread_state::idle;
+	thread_counter = 0;
+
+	for (int i = 0; i < n_threads; ++i)
+	{
+		threads.push_back(thread(thread_handler, this, i));
+		//thread t(thread_handler, this, i);
+		//threads.push_back(t);
+	}
+}
+
+inline void pso::optimiser::threads_move()
+{
+	assert(thread_state == thread_state::idle || thread_state == thread_state::end);
+
+	thread_counter = 0;
+
+	thread_state = thread_state::move;
+}
+
+inline void pso::optimiser::threads_end()
+{
+	assert(thread_state == thread_state::move);
+
+	thread_counter = 0;
+
+	thread_state = thread_state::end;
+}
+
+inline void pso::optimiser::threads_exit()
+{
+	thread_counter = 0;
+
+	thread_state = thread_state::exit;
+
+	for (int i = 0; i<threads.size(); ++i)
+	{
+		threads[i].join();
+	}
+
+	threads.clear();
+}
+
+inline void pso::optimiser::threads_wait()
+{
+	while (thread_counter != n_threads);
+}
+
 void optimiser::do_move_step(optimiser* op, int thread_n) {
 	int min, max;
 
@@ -270,47 +313,85 @@ void optimiser::do_end_step(optimiser* op, int thread_n) {
 	}
 }
 
+void pso::optimiser::thread_handler(optimiser * op, int thread_n)
+{
+	while (op->thread_state != thread_state::exit)
+	{
+		// busy wait for move step
+		while (op->thread_state != thread_state::exit && op->thread_state != thread_state::move);
+		if (op->thread_state == thread_state::exit)
+			break;
+		// do move step
+		do_move_step(op, thread_n);
+
+		// increment counter (used to check for completion)
+		op->thread_counter++;
+
+		// busy wait for end step
+		while (op->thread_state != thread_state::exit && op->thread_state != thread_state::end);
+		if (op->thread_state == thread_state::exit)
+			break;
+
+		do_end_step(op, thread_n);
+
+		op->thread_counter++;
+	}
+}
+
 void optimiser::do_cycle()
 {
-	vector<unique_ptr<thread>> threads;
-	threads.reserve(n_threads);
-	for (int n = 0; n < n_threads; n++)
-	{
-		unique_ptr<thread> t = make_unique<thread>(&do_move_step, this, n);
+	if (n_threads > 1) {
+		threads_move();
+		threads_wait();
+		threads_end();
+		threads_wait();
+#pragma region parallel cycle loops
+		//vector<unique_ptr<thread>> threads;
+		//threads.reserve(n_threads);
+		//for (int n = 0; n < n_threads; n++)
+		//{
+		//	unique_ptr<thread> t = make_unique<thread>(&do_move_step, this, n);
 
-		threads.push_back(move(t));
+		//	threads.push_back(move(t));
+		//}
+
+		//for (int n = 0; n < n_threads; n++)
+		//{
+		//	threads[n]->join();
+		//}
+
+		//threads.clear();
+		//threads.reserve(n_threads);
+
+		//for (int n = 0; n < n_threads; n++)
+		//{
+		//	unique_ptr<thread> t = make_unique<thread>(&do_end_step, this, n);
+
+		//	threads.push_back(move(t));
+		//}
+
+		//for (int n = 0; n < n_threads; n++)
+		//{
+		//	threads[n]->join();
+		//}
+#pragma endregion
+	}
+	else {
+#pragma region normalish cycle loops
+		//#pragma loop(hint_parallel(8))
+		for (int i = 0; i < particles.size(); ++i)
+		{
+			particles[i]->move_step();
+		}
+
+		//#pragma loop(hint_parallel(8))
+		for (int i = 0; i < particles.size(); ++i)
+		{
+			particles[i]->end_step();
+		}
+#pragma endregion
 	}
 
-	for (int n = 0; n < n_threads; n++)
-	{
-		threads[n]->join();
-	}
-
-	threads.clear();
-	threads.reserve(n_threads);
-
-	for (int n = 0; n < n_threads; n++)
-	{
-		unique_ptr<thread> t = make_unique<thread>(&do_end_step, this, n);
-
-		threads.push_back(move(t));
-	}
-
-	for (int n = 0; n < n_threads; n++)
-	{
-		threads[n]->join();
-	}
-	/*#pragma loop(hint_parallel(8))
-	for (int i = 0; i < particles.size(); ++i)
-	{
-		particles[i]->move_step();
-	}
-
-	#pragma loop(hint_parallel(8))
-	for (int i = 0; i < particles.size(); ++i)
-	{
-		particles[i]->end_step();
-	}*/
 
 	/*for (auto particle : particles)
 	{

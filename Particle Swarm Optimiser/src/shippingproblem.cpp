@@ -126,7 +126,8 @@ double shippingproblem::evaluate(coordinate c)
 		// penalise for under estimating
 		if (pload < 0)
 		{
-			pload = abs(pload) * 100000;
+			pload = 100000;
+			//pload = abs(pload) * 100000;
 		}
 
 		score += pload;

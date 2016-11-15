@@ -9,7 +9,7 @@ using namespace std;
 class shippingproblem : public problem
 {
 private:
-	int dimensions;
+	size_t dimensions;
 	vector<vector<double>> testdata;
 
 	//double predict_load(vector<double>::iterator hd_start, vector<double>::iterator hd_end, coordinate* weights);

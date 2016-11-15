@@ -14,6 +14,7 @@ namespace pso {
 	public:
 		struct record {
 			uint32_t cycle;
+			double g_best;
 			double best;
 			double average;
 			double worst;
@@ -32,7 +33,7 @@ namespace pso {
 
 		void dorecord(uint32_t cycle);
 
-		void writeout(string csvfile);
+		void writeout(ostream* logfile);
 	};
 
 }

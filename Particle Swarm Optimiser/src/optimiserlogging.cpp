@@ -62,6 +62,7 @@ void optimiserlogging::dorecord(uint32_t cycle)
 
 	record r;
 	r.cycle = realcount;
+	r.g_best = op2->g_best_fitness;
 	r.best = best;
 	r.average = avg;
 	r.worst = worst;
@@ -69,21 +70,20 @@ void optimiserlogging::dorecord(uint32_t cycle)
 	records.push_back(r);
 }
 
-void pso::optimiserlogging::writeout(string csvfile)
+void pso::optimiserlogging::writeout(ostream* logfile)
 {
-	ofstream logfile(csvfile.c_str(), ofstream::trunc);
-
-	logfile << "cycle,best,average,worst" << endl;
+	*logfile << "cycle,g_best,best,average,worst" << endl;
 
 	for (auto r : records)
 	{
-		logfile
+		*logfile
 			<< r.cycle << ","
+			<< r.g_best << ","
 			<< r.best << ","
 			<< r.average << ","
 			<< r.worst << ","
 			<< endl;
 	}
 
-	logfile.close();
+	//*logfile.close();
 }

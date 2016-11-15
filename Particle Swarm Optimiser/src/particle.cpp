@@ -83,7 +83,7 @@ double particle::evaluate()
 
 void particle::move_step()
 {
-	double c1, c2;
+	double c1, c2, r1, r2;
 
 	c1 = c2 = 2;
 
@@ -91,11 +91,19 @@ void particle::move_step()
 
 	shared_ptr<pso_rng> rng(getOptimiser()->thread_rng());
 
+	uniform_real_distribution<double> dist(0.0, 1.0);
+
+	r1 = dist(*rng.get());
+	r2 = dist(*rng.get());
+
 	VectorXd particleV = _best_position - _position;
 	VectorXd nbestV = neighborhood_best - _position;
 
-	particleV = particleV.cwiseProduct(randomWeightVector(rng.get(), n_dimensions));
-	nbestV    = nbestV.cwiseProduct(randomWeightVector(rng.get(), n_dimensions));
+	particleV *= r1;
+	nbestV    *= r2;
+
+	//particleV = particleV.cwiseProduct(randomWeightVector(rng.get(), n_dimensions));
+	//nbestV    = nbestV.cwiseProduct(randomWeightVector(rng.get(), n_dimensions));
 
 	particleV *= c1;
 	nbestV    *= c2;

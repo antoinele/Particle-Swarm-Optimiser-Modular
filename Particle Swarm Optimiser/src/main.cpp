@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <fstream>
 
 #include "shippingproblem.h"
 #include "psotypes.h"
@@ -29,7 +30,8 @@ void print_help(string programname) {
 		<< "  -maxruntime <n>    The time, in seconds, the program should run for until stopping." << endl
 		<< "                     When combined with -maxcycles or -targetfitness the first event" << endl
 		<< "                     will stop the program. Set to 0 for infinite runtime. Default is" << endl
-		<< "                     30s." << endl;
+		<< "                     30s." << endl
+		<< "  -logfile <csv>	 Write statistics to the specified file. Specify `-` for stdout." << endl;
 		
 }
 
@@ -43,6 +45,7 @@ int main(int argc, char const *argv[])
 	unsigned int seed = static_cast<unsigned int>(chrono::system_clock::now().time_since_epoch().count());
 	bool wait_after_end = false;
 	string csvfile;
+	string logfile;
 
 	shared_ptr<problem> problem;
 
@@ -74,6 +77,10 @@ int main(int argc, char const *argv[])
 			else if (strcmp(argv[i], "-maxruntime") == 0)
 			{
 				max_runtime = atoi(argv[++i]);
+			}
+			else if (strcmp(argv[i], "-logfile") == 0)
+			{
+				logfile = argv[++i];
 			}
 			else {
 				cerr << "Unknown argument: " << argv[i] << endl;
@@ -108,7 +115,7 @@ int main(int argc, char const *argv[])
 	// Configure optimiser
     shared_ptr<pso::optimiser> optimiser(pso::optimiser::create_optimiser(problem));
 	optimiser->set_seed(seed);
-	optimiser->enable_parallel(8);
+	optimiser->enable_parallel(4);
 
 	{	// Create initial solutions
 		vector<coordinate> solutions(generate_solutions(problem.get(), num_solutions, seed));
@@ -178,9 +185,9 @@ int main(int argc, char const *argv[])
 		auto c = optimiser->best_solution();
 
 		// Print best solution
-		cout << "Best solution: " << coordinateToString(&c.first) << endl;
+		cerr << "Best solution: " << coordinateToString(&c.first) << endl;
 
-		cout << "Fitness: " << c.second << endl;
+		cerr << "Fitness: " << c.second << endl;
 
 		if (!optimiser->problem()->is_valid(c.first))
 		{
@@ -196,7 +203,7 @@ int main(int argc, char const *argv[])
 		}
 
 		while (1) {
-			cout << "Continue? y/N" << endl;
+			cerr << "Continue? y/N" << endl;
 			string input;
 			getline(cin, input);
 			
@@ -211,7 +218,18 @@ int main(int argc, char const *argv[])
 	}
 exit:
 
-	optimiser->logger()->writeout("performancedata.csv");
-
+	if (!logfile.empty()) {
+		if (logfile.compare("-") == 0) {
+			optimiser->logger()->writeout(&cout);
+		}
+		else {
+			ofstream logfile(csvfile.c_str(), ofstream::trunc);
+			if (logfile.is_open()) {
+				optimiser->logger()->writeout(&logfile);
+			}
+			logfile.close();
+		}
+	}
+	
     return 0;
 }
