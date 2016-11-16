@@ -15,27 +15,10 @@ using namespace std;
 
 #define CYCLE_SIZE 100
 
-#ifdef THREADING_USE_MUTEX
-#define STATE_WAIT_INIT(op) unique_lock<mutex> lock(op->thread_mutex);
-
-#define STATE_WAIT_LOCK(op, state) { \
-	while (op->thread_state != thread_state::exit && op->thread_state != state) \
-	op->thread_state_cv.wait(lock); \
-}
-#else
-#define STATE_WAIT_INIT(op)
-#define STATE_WAIT_LOCK(op, state) {\
-	while (op->thread_state != thread_state::exit && op->thread_state != state); \
-}
-#endif
-
 optimiser::optimiser(shared_ptr<pso::problem> problem) 
                      : _problem(problem)
 {
 	n_dimensions = _problem->bounds().size();
-	
-	//logger = make_shared<optimiserlogging>();
-	//logger->setoptimiser(shared_from_this());
 
 	if (comparator(numeric_limits<double>::min(), numeric_limits<double>::max()))
 		target_fitness = numeric_limits<double>::min();
@@ -46,7 +29,6 @@ optimiser::optimiser(shared_ptr<pso::problem> problem)
 }
 
 optimiser::~optimiser() {
-	threads_exit();
 }
 
 double optimiser::evaluator(coordinate position)
@@ -68,7 +50,6 @@ void optimiser::add_solution(coordinate position)
 	uniform_real_distribution<double> dist(-1.0, 1.0);
     for (int i = 0; i < n_dimensions; ++i)
     {
-		//uniform_real_distribution<double> dist(bounds[i][0], bounds[i][1]);
         velocity.push_back(dist(*rng));
     }
 
@@ -227,154 +208,6 @@ void optimiser::connect_neighbourhood(int average_neighbours)
 	}
 }
 
-inline void calcRanges(int &min, int &max, int n_threads, int n_particles, int thread_n)
-{
-	int ppt = (n_particles + 1) / n_threads;
-	min = ppt * thread_n;
-	max = min + ppt - 1;
-
-	if (thread_n == n_threads - 1)
-	{
-		max = n_particles - 1;
-	}
-}
-
-void pso::optimiser::threads_reset()
-{
-	threads_exit();
-
-	thread_state = thread_state::idle;
-	thread_counter = 0;
-
-	for (int i = 0; i < n_threads; ++i)
-	{
-		threads.push_back(thread(thread_handler, this, i));
-	}
-}
-
-inline void pso::optimiser::threads_move()
-{
-	//unique_lock<mutex> lock(thread_mutex);
-	STATE_WAIT_INIT(this);
-	assert(thread_state == thread_state::idle || thread_state == thread_state::end);
-
-	thread_counter = 0;
-
-	thread_state = thread_state::move;
-#ifdef THREADING_USE_MUTEX
-	thread_state_cv.notify_all();
-#endif
-}
-
-inline void pso::optimiser::threads_end()
-{
-	//unique_lock<mutex> lock(thread_mutex);
-	STATE_WAIT_INIT(this);
-	assert(thread_state == thread_state::move);
-
-	thread_counter = 0;
-
-	thread_state = thread_state::end;
-#ifdef THREADING_USE_MUTEX
-	thread_state_cv.notify_all();
-#endif
-}
-
-inline void pso::optimiser::threads_exit()
-{
-	thread_counter = 0;
-
-	thread_state = thread_state::exit;
-#ifdef THREADING_USE_MUTEX
-	thread_state_cv.notify_all();
-#endif
-
-	for (int i = 0; i<threads.size(); ++i)
-	{
-		threads[i].join();
-	}
-
-	threads.clear();
-}
-
-inline void pso::optimiser::threads_wait()
-{
-#ifdef THREADING_USE_MUTEX
-	unique_lock<mutex> lock(thread_counter_mutex);
-	
-	while (thread_counter != n_threads)
-		thread_counter_cv.wait(lock);
-#else
-	while (thread_counter != n_threads);
-#endif
-}
-
-void optimiser::do_move_step(optimiser* op, int thread_n) {
-	int min, max;
-
-	calcRanges(min, max, op->n_threads, (int)op->particles.size(), thread_n);
-
-	for (int i = min; i <= max; ++i)
-	{
-		op->particles[i]->move_step();
-	}
-}
-
-void optimiser::do_end_step(optimiser* op, int thread_n) {
-	int min, max;
-
-	calcRanges(min, max, op->n_threads, (int)op->particles.size(), thread_n);
-
-	for (int i = min; i <= max; ++i)
-	{
-		op->particles[i]->end_step();
-	}
-}
-
-void pso::optimiser::thread_handler(optimiser * op, int thread_n)
-{
-	//unique_lock<mutex> lock(op->thread_mutex);
-	STATE_WAIT_INIT(op);
-
-	while (op->thread_state != thread_state::exit)
-	{
-		// wait for move step
-//		while (op->thread_state != thread_state::exit && op->thread_state != thread_state::move)
-//#ifdef THREADING_USE_MUTEX
-//			op->thread_state_cv.wait(lock)
-//#endif
-			//;
-		STATE_WAIT_LOCK(op, thread_state::move);
-		if (op->thread_state == thread_state::exit)
-			break;
-		// do move step
-		do_move_step(op, thread_n);
-
-		// increment counter (used to check for completion)
-		op->thread_counter++;
-#ifdef THREADING_USE_MUTEX
-		op->thread_counter_cv.notify_all();
-#endif
-		// wait for end step
-//		while (op->thread_state != thread_state::exit && op->thread_state != thread_state::end)
-//#ifdef THREADING_USE_MUTEX
-//			op->thread_state_cv.wait(lock)
-//#endif
-//			;
-		STATE_WAIT_LOCK(op, thread_state::end);
-		if (op->thread_state == thread_state::exit)
-			break;
-
-		// do end step
-		do_end_step(op, thread_n);
-
-		op->thread_counter++;
-#ifdef THREADING_USE_MUTEX
-		op->thread_counter_cv.notify_all();
-#endif
-	}
-}
-
 void optimiser::do_cycle()
 {
 #pragma omp for
@@ -390,29 +223,6 @@ void optimiser::do_cycle()
 	}
 
 	evaluate_cycle_mt();
-}
-
-void optimiser::do_cycle_mt()
-{
-	threads_move();
-	threads_wait();
-	threads_end();
-	threads_wait();
-
-	evaluate_cycle_mt();
-}
-
-void optimiser::evaluate_cycle()
-{
-	auto bs = best_solution();
-
-	double curfitness = bs.second;
-
-	if (comparator(curfitness, g_best_fitness))
-	{
-		g_best = bs.first;
-		g_best_fitness = bs.second;
-	}
 }
 
 void pso::optimiser::evaluate_cycle_mt()

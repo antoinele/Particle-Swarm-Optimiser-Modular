@@ -34,8 +34,6 @@ namespace pso {
         void connect_neighbourhood(int average_neighbours);
 
 		void do_cycle();
-		void do_cycle_mt();
-		void evaluate_cycle();
 		void evaluate_cycle_mt();
 
 		coordinate g_best;
@@ -45,27 +43,6 @@ namespace pso {
 		atomic_uint seed_count;
 
 		int n_threads = 1;
-		vector<thread> threads;
-		atomic_int thread_counter;
-#ifdef THREADING_USE_MUTEX
-		mutex thread_counter_mutex;
-		condition_variable thread_counter_cv;
-		mutex thread_mutex;
-		condition_variable thread_state_cv;
-#endif
-		enum class thread_state {
-			idle = 0,
-			move,
-			end,
-			exit
-		}; // thread_state = thread_state::idle;
-		atomic<thread_state> thread_state = thread_state::idle;
-
-		void threads_reset();
-		inline void threads_move();
-		inline void threads_end();
-		inline void threads_exit();
-		inline void threads_wait();
 
 		shared_ptr<optimiserlogging> _logger;
 
@@ -74,10 +51,6 @@ namespace pso {
 		uint32_t max_runtime = numeric_limits<uint32_t>::max();
 		double target_fitness;
 #pragma endregion
-
-		static void do_move_step(optimiser* op, int thread_n);
-		static void do_end_step(optimiser* op, int thread_n);
-		static void thread_handler(optimiser* op, int thread_n);
 
     public:
         double evaluator(coordinate position);
