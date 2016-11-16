@@ -17,13 +17,21 @@ particle::particle(shared_ptr<optimiser> optimiser)
 	bounds = optimiser->problem()->bounds();
 	n_dimensions = (int)bounds.size();
 
+	vector<vector<double>> vbounds;
+
+	for (int i = 0; i < n_dimensions; ++i)
+	{
+		vector<double> b = { -1, 1 };
+		vbounds.push_back(b);
+	}
+
 	shared_ptr<pso_rng> gen = optimiser->thread_rng();
 
 	coordinate newposition;
 	coordinate newvelocity;
 
 	newposition = generate_coordinate(&bounds, gen.get());
-	newvelocity = generate_coordinate(&bounds, gen.get());
+	newvelocity = generate_coordinate(&vbounds, gen.get());
 
     particle(optimiser, newposition, newvelocity);
 }

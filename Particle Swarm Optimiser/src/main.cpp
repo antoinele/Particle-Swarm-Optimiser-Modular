@@ -129,50 +129,7 @@ int main(int argc, char const *argv[])
 		}
 	}
 
-	// Run simulation
-	/*if(target_fitness == numeric_limits<double>::max())
-		optimiser->run_simulation(max_cycles);
-	else
-		optimiser->run_until(target_fitness, max_cycles);*/
-
-	// New run simulation
-	//{
-	//	auto starttime = chrono::steady_clock().now();
-	//	int32_t cyclecount = 0;
-
-	//	while (1) {
-	//		double curfitness = optimiser->run_simulation(100);
-	//		auto curtime = chrono::steady_clock().now();
-	//		cyclecount += 100;
-
-	//		// stop if the target fitness has been reached
-	//		if (target_fitness < numeric_limits<double>::max() && optimiser->comparator(curfitness, target_fitness)) {
-	//			cerr << "Hit target fitness." << endl;
-	//			break;
-	//		}
-
-	//		// stop if the max time has been reached
-	//		chrono::duration<double> elapsed_time = chrono::duration_cast<chrono::duration<double>>(curtime - starttime);
-	//		if (elapsed_time.count() >= max_runtime) {
-	//			cerr << "Hit max runtime." << endl;
-	//			break;
-	//		}
-
-	//		// stop if the maximum number of cycles has been reached
-	//		if (cyclecount >= max_cycles) {
-	//			break;
-	//		}
-	//	}
-
-	//	auto endtime = chrono::steady_clock().now();
-	//	chrono::duration<double> runtime = chrono::duration_cast<chrono::duration<double>>(endtime - starttime);
-
-	//	cerr << "Cycles taken: " << cyclecount << endl;
-	//	cerr << "Total run time: " << runtime.count() << " seconds" << endl;
-	//}
-
-
-	// Better run simulation
+	// Set up simulation
 	optimiser->set_max_cycles(max_cycles);
 	optimiser->set_max_runtime(max_runtime);
 	optimiser->set_target_fitness(target_fitness);

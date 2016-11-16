@@ -9,6 +9,8 @@
 #include <functional>
 #include <atomic>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 using namespace pso;
 using namespace std;
@@ -32,7 +34,9 @@ namespace pso {
         void connect_neighbourhood(int average_neighbours);
 
 		void do_cycle();
+		void do_cycle_mt();
 		void evaluate_cycle();
+		void evaluate_cycle_mt();
 
 		coordinate g_best;
 		double g_best_fitness = numeric_limits<double>::max();
@@ -43,12 +47,19 @@ namespace pso {
 		int n_threads = 1;
 		vector<thread> threads;
 		atomic_int thread_counter;
-		volatile enum class thread_state {
+#ifdef THREADING_USE_MUTEX
+		mutex thread_counter_mutex;
+		condition_variable thread_counter_cv;
+		mutex thread_mutex;
+		condition_variable thread_state_cv;
+#endif
+		enum class thread_state {
 			idle = 0,
 			move,
 			end,
 			exit
-		} thread_state = thread_state::idle;
+		}; // thread_state = thread_state::idle;
+		atomic<thread_state> thread_state = thread_state::idle;
 
 		void threads_reset();
 		inline void threads_move();
