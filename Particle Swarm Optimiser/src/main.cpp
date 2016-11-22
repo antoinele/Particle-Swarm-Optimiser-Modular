@@ -31,7 +31,10 @@ void print_help(string programname) {
 		<< "                     When combined with -maxcycles or -targetfitness the first event" << endl
 		<< "                     will stop the program. Set to 0 for infinite runtime. Default is" << endl
 		<< "                     30s." << endl
-		<< "  -logfile <csv>	 Write statistics to the specified file. Specify `-` for stdout." << endl;
+		<< "  -logfile <csv>	 Write statistics to the specified file. Specify `-` for stdout." << endl
+		<< "  -threads <n>       The number of threads to run in parallel. Default: 1." << endl
+		<< "  -neighbourhood <n> Set the average size of the neighbourhood. 0 means use g_best." << endl
+		<< "                     Default: 3." << endl;
 		
 }
 
@@ -42,6 +45,8 @@ int main(int argc, char const *argv[])
 	int num_solutions = 10;
 	int max_cycles = -1;
 	int max_runtime = -1;
+	int n_threads = 1;
+	int neighbourhood_size = 1;
 	unsigned int seed = static_cast<unsigned int>(chrono::system_clock::now().time_since_epoch().count());
 	bool wait_after_end = false;
 	string csvfile;
@@ -82,6 +87,14 @@ int main(int argc, char const *argv[])
 			{
 				logfile = argv[++i];
 			}
+			else if (strcmp(argv[i], "-threads") == 0)
+			{
+				n_threads = atoi(argv[++i]);
+			}
+			else if (strcmp(argv[i], "-neighbourhood") == 0)
+			{
+				neighbourhood_size = atoi(argv[++i]);
+			}
 			else {
 				cerr << "Unknown argument: " << argv[i] << endl;
 				print_help(argv[0]);
@@ -115,7 +128,8 @@ int main(int argc, char const *argv[])
 	// Configure optimiser
     shared_ptr<pso::optimiser> optimiser(pso::optimiser::create_optimiser(problem));
 	optimiser->set_seed(seed);
-	optimiser->enable_parallel(4);
+	optimiser->enable_parallel(n_threads);
+	optimiser->set_neighbourhood_size(neighbourhood_size);
 
 	{	// Create initial solutions
 		vector<coordinate> solutions(generate_solutions(problem.get(), num_solutions, seed));

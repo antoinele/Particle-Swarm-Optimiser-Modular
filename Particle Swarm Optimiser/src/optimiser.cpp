@@ -108,7 +108,7 @@ pair<coordinate, double> optimiser::best_solution()
 void optimiser::init_simulation() {
 	static bool initialised = false;
 	if (!initialised) {
-		connect_neighbourhood(3);
+		connect_neighbourhood(neighbourhood_size);
 		initialised = true;
 	}
 }
@@ -159,6 +159,11 @@ void pso::optimiser::run_simulation()
 void optimiser::enable_parallel(int parallel_jobs)
 {
 	n_threads = parallel_jobs;
+}
+
+void pso::optimiser::set_neighbourhood_size(int neighbourhood_size)
+{
+	this->neighbourhood_size = neighbourhood_size;
 }
 
 void optimiser::connect_neighbourhood(size_t average_neighbours)

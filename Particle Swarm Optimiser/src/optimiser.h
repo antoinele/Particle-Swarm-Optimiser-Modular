@@ -43,6 +43,7 @@ namespace pso {
 		atomic_uint seed_count;
 
 		int n_threads = 1;
+		int neighbourhood_size = 3;
 
 		shared_ptr<optimiserlogging> _logger;
 
@@ -83,6 +84,7 @@ namespace pso {
 		void set_target_fitness(double target_fitness) { this->target_fitness = target_fitness; }
 
 		void enable_parallel(int n_threads);
+		void set_neighbourhood_size(int neighbourhood_size);
 
 		shared_ptr<problem_base> problem() {
 			return _problem;
