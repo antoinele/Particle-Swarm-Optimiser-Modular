@@ -34,7 +34,7 @@ VectorXd pso::coordinateToVectorXd(const coordinate* c)
 	for (int i = 0; i < c->size(); i++)
 	{
 		double d = (*c)[i];
-		assert(isfinite<double>(d));
+		//assert(isfinite<double>(d));
 		v(i) = d;
 	}
 
@@ -51,7 +51,7 @@ coordinate pso::vectorXdToCoordinate(const Eigen::VectorXd* v)
 	for (int i = 0; i < v->size(); i++)
 	{
 		double d = (*v)(i);
-		assert(isfinite<double>(d));
+		//assert(isfinite<double>(d));
 		c[i] = d;
 	}
 
@@ -91,7 +91,7 @@ string pso::coordinateToString(const coordinate * c)
 	return oss.str();
 }
 
-vector<coordinate> pso::generate_solutions(problem * prob, int num_solutions, int seed)
+vector<coordinate> pso::generate_solutions(problem_base * prob, int num_solutions, int seed)
 {
 	assert(num_solutions > 0);
 	vector<coordinate> solutions(num_solutions);
@@ -120,7 +120,7 @@ vector<coordinate> pso::generate_solutions(problem * prob, int num_solutions, in
 	return solutions;
 }
 
-void pso::print_solutions(problem* aar, vector<coordinate>* solutions)
+void pso::print_solutions(problem_base* aar, vector<coordinate>* solutions)
 {
 	for (auto i : *solutions)
 	{

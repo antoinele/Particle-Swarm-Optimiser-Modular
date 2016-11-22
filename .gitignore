@@ -211,3 +211,7 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /Particle Swarm Optimiser/performancedata.csv
+
+# gcc stuff
+*.o
+*.d

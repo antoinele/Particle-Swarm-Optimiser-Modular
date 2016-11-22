@@ -12,7 +12,6 @@
 #include <mutex>
 #include <condition_variable>
 
-using namespace pso;
 using namespace std;
 
 namespace pso {
@@ -24,14 +23,15 @@ namespace pso {
     class optimiser : public enable_shared_from_this<optimiser>
     {
 		friend class optimiserlogging;
+		friend class particle;
     private:
-		shared_ptr<problem> _problem;
-		optimiser(shared_ptr<problem> problem);
+		shared_ptr<problem_base> _problem;
+		optimiser(shared_ptr<problem_base> problem);
 
         vector<shared_ptr<particle>> particles;
         size_t n_dimensions;
 
-        void connect_neighbourhood(int average_neighbours);
+        void connect_neighbourhood(size_t average_neighbours);
 
 		void do_cycle();
 		void evaluate_cycle_mt();
@@ -53,10 +53,15 @@ namespace pso {
 #pragma endregion
 
     public:
-        double evaluator(coordinate position);
-
+		inline double evaluator(coordinate position)
+		{
+			return _problem->evaluate(position);
+		}
 		// Return true if A is better than B
-		bool comparator(double a, double b);
+		inline bool comparator(double a, double b)
+		{
+			return _problem->comparator(a, b);
+		}
 
 		shared_ptr<pso_rng> thread_rng();
 
@@ -79,7 +84,7 @@ namespace pso {
 
 		void enable_parallel(int n_threads);
 
-		shared_ptr<problem> problem() {
+		shared_ptr<problem_base> problem() {
 			return _problem;
 		}
 
@@ -87,7 +92,7 @@ namespace pso {
 			return _logger;
 		}
 
-		static shared_ptr<optimiser> create_optimiser(shared_ptr<pso::problem> problem)
+		static shared_ptr<optimiser> create_optimiser(shared_ptr<pso::problem_base> problem)
 		{
 			shared_ptr<optimiser> o(new optimiser(problem));
 

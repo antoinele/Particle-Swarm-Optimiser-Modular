@@ -5,7 +5,7 @@
 
 using namespace pso;
 
-class SphereProblem : public problem {
+class SphereProblem : public problem_base {
 private:
 	const int n_dimensions;
 	vector<vector<double>> _bounds;

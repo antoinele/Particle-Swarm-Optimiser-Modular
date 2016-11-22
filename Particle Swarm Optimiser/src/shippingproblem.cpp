@@ -77,7 +77,7 @@ vector<vector<double>> shippingproblem::bounds()
 {
 	vector<vector<double>> b;
 
-	for (int i = 0; i < dimensions; ++i)
+	for (size_t i = 0; i < dimensions; ++i)
 	{
 		vector<double> ib = { 0.0, 1.0 };
 		b.push_back(ib);
@@ -100,7 +100,7 @@ double shippingproblem::evaluate(coordinate c)
 	assert(testdatasize > 0);
 	assert(testdata[0].size() - 1 == c.size());
 
-	for (int i = 0; i < testdatasize; ++i)
+	for (size_t i = 0; i < testdatasize; ++i)
 	{
 		auto first = testdata[i].begin() + 1,
 			 last = testdata[i].end();

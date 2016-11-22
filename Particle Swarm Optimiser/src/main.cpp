@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
 	string csvfile;
 	string logfile;
 
-	shared_ptr<problem> problem;
+	shared_ptr<problem_base> problem;
 
 	// Parse arguments
 	for (int i = 1; i < argc; i++)

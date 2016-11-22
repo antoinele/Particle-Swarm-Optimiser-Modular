@@ -33,11 +33,12 @@ namespace pso {
 
 		weak_ptr<optimiser> _optimiser;
 
-		shared_ptr<optimiser> getOptimiser() {
+		inline shared_ptr<optimiser> getOptimiser() {
 			return _optimiser.lock();
 		}
 
         VectorXd find_nbest_position();
+		VectorXd find_gbest_position();
 
         VectorXd _velocity;
 		VectorXd _position;

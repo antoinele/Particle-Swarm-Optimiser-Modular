@@ -2,6 +2,7 @@
 
 #include "psotypes.h"
 #include "problem.h"
+#include <iostream>
 #include <vector>
 #include <random>
 #include <Eigen/Dense>
@@ -19,16 +20,16 @@ namespace pso {
 
 	string coordinateToString(const coordinate* c);
 
-	vector<coordinate> generate_solutions(problem* prob, int num_solutions, int seed = 0);
+	vector<coordinate> generate_solutions(problem_base* prob, int num_solutions, int seed = 0);
 
-	void print_solutions(problem* aar, vector<coordinate>* solutions);
+	void print_solutions(problem_base* aar, vector<coordinate>* solutions);
 	void print_solutions(vector<coordinate>* solutions);
 
 	template <typename T> void print_vecvec(vector<vector<T>>* vv)
 	{
 		for (vector<coordinate>::iterator i = vv->begin(); i != vv->end(); ++i)
 		{
-			cout << coordinateToString(&(*i)) << endl;
+			cerr << coordinateToString(&(*i)) << endl;
 		}
 	}
 }

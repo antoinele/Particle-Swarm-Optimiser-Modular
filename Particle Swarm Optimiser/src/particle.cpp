@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 
 #include "utilities.h"
+#include "optimiser.h"
 
 using namespace std;
 using namespace pso;
@@ -84,6 +85,13 @@ VectorXd particle::find_nbest_position()
     return *cur_best_position;
 }
 
+VectorXd pso::particle::find_gbest_position()
+{
+	auto opt = getOptimiser();
+	
+	return VectorXd::Map(opt->g_best.data(), opt->g_best.size());
+}
+
 double particle::evaluate()
 {
 	return getOptimiser()->evaluator(position());
@@ -95,7 +103,11 @@ void particle::move_step()
 
 	c1 = c2 = 2;
 
-	VectorXd neighborhood_best = find_nbest_position();
+	VectorXd neighborhood_best;
+	if (neighbours.size() > 0)
+		neighborhood_best = find_nbest_position();
+	else
+		neighborhood_best = find_gbest_position();
 
 	shared_ptr<pso_rng> rng(getOptimiser()->thread_rng());
 
@@ -130,11 +142,13 @@ void particle::end_step()
 		{
 			//_position[i] = bounds[i][1] - fabs(_position[i] - bounds[i][1]);
 			_position[i] = bounds[i][1];
+			_velocity[i] = 0; // stop moving further out of bounds
 		}
 		else if (_position[i] < bounds[i][0])
 		{
 			//_position[i] = bounds[i][0] + fabs(_position[i] - bounds[i][0]);
 			_position[i] = bounds[i][0];
+			_velocity[i] = 0; // stop moving further out of bounds
 		}
 	}
 

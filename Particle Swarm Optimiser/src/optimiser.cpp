@@ -15,7 +15,7 @@ using namespace std;
 
 #define CYCLE_SIZE 100
 
-optimiser::optimiser(shared_ptr<pso::problem> problem) 
+optimiser::optimiser(shared_ptr<pso::problem_base> problem) 
                      : _problem(problem)
 {
 	n_dimensions = _problem->bounds().size();
@@ -31,16 +31,6 @@ optimiser::optimiser(shared_ptr<pso::problem> problem)
 optimiser::~optimiser() {
 }
 
-double optimiser::evaluator(coordinate position)
-{
-	return _problem->evaluate(position);
-}
-
-inline bool optimiser::comparator(double a, double b)
-{
-	return _problem->comparator(a, b);
-}
-
 void optimiser::add_solution(coordinate position)
 {
 	auto bounds = _problem->bounds();
@@ -48,7 +38,7 @@ void optimiser::add_solution(coordinate position)
 
     coordinate velocity;
 	uniform_real_distribution<double> dist(-1.0, 1.0);
-    for (int i = 0; i < n_dimensions; ++i)
+    for (size_t i = 0; i < n_dimensions; ++i)
     {
         velocity.push_back(dist(*rng));
     }
@@ -97,16 +87,15 @@ pair<coordinate, double> optimiser::best_solution()
     double best_fitness(g_best_fitness);
     coordinate best_found(g_best);
 
-    for(auto particle : particles)
+#pragma omp parallel for
+    for(int i=0; i<(int)particles.size(); i++)
     {
-		coordinate p = particle->best_position();
+		coordinate p = particles[i]->best_position();
 
 		double fitness = evaluator(p);
 
-		//double fitness = particle->evaluate();
         if(comparator(fitness, best_fitness))
         {
-            //best_found = particle->position();
 			best_found = p;
 			best_fitness = fitness;
         }
@@ -172,7 +161,7 @@ void optimiser::enable_parallel(int parallel_jobs)
 	n_threads = parallel_jobs;
 }
 
-void optimiser::connect_neighbourhood(int average_neighbours)
+void optimiser::connect_neighbourhood(size_t average_neighbours)
 {
 	uniform_int_distribution<int> dist(0, (int)particles.size() - 1);
 
@@ -180,7 +169,7 @@ void optimiser::connect_neighbourhood(int average_neighbours)
 
 	for (auto p : particles)
 	{
-		for (int i = 0; i < average_neighbours; i++)
+		for (size_t i = 0; i < average_neighbours; i++)
 		{
 			int stuck = 0;
 
@@ -210,14 +199,14 @@ void optimiser::connect_neighbourhood(int average_neighbours)
 
 void optimiser::do_cycle()
 {
-#pragma omp for
-	for (int i = 0; i < particles.size(); ++i)
+#pragma omp parallel for
+	for (int i = 0; i < (int)particles.size(); ++i)
 	{
 		particles[i]->move_step();
 	}
 
-#pragma omp for
-	for (int i = 0; i < particles.size(); ++i)
+#pragma omp parallel for
+	for (int i = 0; i < (int)particles.size(); ++i)
 	{
 		particles[i]->end_step();
 	}
@@ -227,8 +216,8 @@ void optimiser::do_cycle()
 
 void pso::optimiser::evaluate_cycle_mt()
 {
-#pragma omp for
-	for (int i=0, len=particles.size(); i<len; i++)
+#pragma omp parallel for
+	for (int i=0; i<(int)particles.size(); i++)
 	{
 		coordinate p = particles[i]->best_position();
 

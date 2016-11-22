@@ -5,7 +5,7 @@
 
 namespace pso {
 
-	class problem {
+	class problem_base {
 	public:
 		virtual vector<vector<double>> bounds() = 0;
 		bool is_valid(coordinate c) {

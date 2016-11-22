@@ -1,12 +1,12 @@
 #pragma once
 
-#include <problem.h>
+#include "problem.h"
 #include <string>
 
 using namespace pso;
 using namespace std;
 
-class shippingproblem : public problem
+class shippingproblem : public problem_base
 {
 private:
 	size_t dimensions;
