@@ -33,7 +33,7 @@ void print_help(string programname) {
 		<< "                     30s." << endl
 		<< "  -logfile <csv>	 Write statistics to the specified file. Specify `-` for stdout." << endl
 		<< "  -threads <n>       The number of threads to run in parallel. Default: 1." << endl
-		<< "  -neighbourhood <n> Set the average size of the neighbourhood. 0 means use g_best." << endl
+		<< "  -neighbours <n>    Set the average size of the neighbourhood. 0 means use g_best." << endl
 		<< "                     Default: 3." << endl;
 		
 }
@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
 			{
 				n_threads = atoi(argv[++i]);
 			}
-			else if (strcmp(argv[i], "-neighbourhood") == 0)
+			else if (strcmp(argv[i], "-neighbours") == 0)
 			{
 				neighbourhood_size = atoi(argv[++i]);
 			}
@@ -127,9 +127,14 @@ int main(int argc, char const *argv[])
 
 	// Configure optimiser
     shared_ptr<pso::optimiser> optimiser(pso::optimiser::create_optimiser(problem));
+	optimiserlogging logger(optimiser);
 	optimiser->set_seed(seed);
 	optimiser->enable_parallel(n_threads);
 	optimiser->set_neighbourhood_size(neighbourhood_size);
+
+	if (!logfile.empty()) {
+		optimiser->set_logger(&logger);
+	}
 
 	{	// Create initial solutions
 		vector<coordinate> solutions(generate_solutions(problem.get(), num_solutions, seed));
@@ -191,14 +196,14 @@ exit:
 
 	if (!logfile.empty()) {
 		if (logfile.compare("-") == 0) {
-			optimiser->logger()->writeout(&cout);
+			logger.writeout(&cout);
 		}
 		else {
-			ofstream logfile(csvfile.c_str(), ofstream::trunc);
-			if (logfile.is_open()) {
-				optimiser->logger()->writeout(&logfile);
+			ofstream ofs(logfile.c_str(), ofstream::trunc);
+			if (ofs.is_open()) {
+				logger.writeout(&ofs);
 			}
-			logfile.close();
+			ofs.close();
 		}
 	}
 	

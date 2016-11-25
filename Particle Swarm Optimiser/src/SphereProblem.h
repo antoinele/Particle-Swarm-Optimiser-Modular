@@ -15,5 +15,8 @@ public:
 	bool is_valid(coordinate c);
 	double evaluate(coordinate c);
 
-	bool comparator(double a, double b);
+	inline bool comparator(double a, double b)
+	{
+		return a < b;
+	}
 };

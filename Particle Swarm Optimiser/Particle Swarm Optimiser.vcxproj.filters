@@ -19,9 +19,6 @@
     <Text Include="Makefile_" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\optimiser.h">
       <Filter>Header Files</Filter>
     </ClInclude>

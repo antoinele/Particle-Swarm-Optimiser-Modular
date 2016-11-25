@@ -215,3 +215,8 @@ ModelManifest.xml
 # gcc stuff
 *.o
 *.d
+
+# user files
+cwk_train.csv
+cwk_test.csv
+performancedata.csv

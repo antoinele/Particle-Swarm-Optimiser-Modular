@@ -1,10 +1,16 @@
-CXX		   := g++-6
-INCLUDES   := -Isrc -I../packages/Eigen.3.2.9/build/native/include
-CFLAGS	   := -Wall -fopenmp
-CXXFLAGS   := -std=c++14 -Wall -fopenmp
-LDFLAGS    := -fopenmp
-SOURCES    := src/shippingproblem.cpp src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp src/main.cpp 
-EXECUTABLE := pso
+CXX				:= g++-6
+INCLUDES		:= -Isrc -I../packages/Eigen.3.2.9/build/native/include
+CFLAGS			:= -Wall -fopenmp
+CXXFLAGS		:= -std=c++14 -Wall -fopenmp
+LDFLAGS			:= -fopenmp
+SHAREDSOURCES	:= src/shippingproblem.cpp src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
+SOURCES			:= $(SHAREDSOURCES) src/main.cpp
+EXECUTABLE		:= pso
+
+EVALUATORSRC	:= $(SHAREDSOURCES) src/evaluatorcli.cpp
+EVALUATORBIN	:= evaluator
+#PREDICTORSRC	:= $(SHAREDSOURCES) src/predictorcli.cpp
+#PREDICTORBIN	:= predictor
 
 DEBUGDIR   := bin/Debug
 RELEASEDIR := bin/Release
@@ -13,23 +19,35 @@ DEBUG ?= 0
 ifeq ($(DEBUG),1)
 	CXXFLAGS += -DDEBUG -g
 	BUILDDIR := $(DEBUGDIR)
-	TARGET := $(BUILDDIR)/$(EXECUTABLE)
 else
 	CXXFLAGS += -O3
 	LDFLAGS += -flto
 	BUILDDIR := $(RELEASEDIR)
-	TARGET := $(BUILDDIR)/$(EXECUTABLE)
 endif
 
-OBJECTS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.o)))
-DEPS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.d)))
+TARGET := $(BUILDDIR)/$(EXECUTABLE)
+EVALUATORTGT := $(BUILDDIR)/$(EVALUATORBIN)
+
+srcs2obj = $(addprefix $(BUILDDIR)/,$(subst src/,,$(patsubst %.cpp,%.o,$(1))))
+srcs2d   = $(addprefix $(BUILDDIR)/,$(subst src/,,$(patsubst %.cpp,%.d,$(1))))
+
+OBJECTS	= $(call srcs2obj, $(SOURCES))
+DEPS	= $(call srcs2d, $(SOURCES))
+
+EVALUATOROBJS = $(call srcs2obj, $(EVALUATORSRC))
+
+#OBJECTS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.o)))
+#DEPS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.d)))
 
 .SECONDARY: $(DEPS)
 .PHONY: all clean
 
-all: $(TARGET)
+all: $(TARGET) $(EVALUATORTGT)
 
 $(TARGET): $(OBJECTS) | $(BUILDDIR)
+	$(CXX) $(LDFLAGS) $^ -o $@
+
+$(EVALUATORTGT): $(EVALUATOROBJS) | $(BUILDDIR)
 	$(CXX) $(LDFLAGS) $^ -o $@
 
 $(BUILDDIR)/%.o: src/%.cpp | $(BUILDDIR) $(DEPS)
@@ -42,7 +60,7 @@ $(BUILDDIR):
 	mkdir -p $@
 
 clean:
-	-rm -f $(OBJECTS) $(DEPS) $(TARGET)
+	-rm -f $(OBJECTS) $(DEPS) $(TARGET) $(EVALUATOROBJS) $(EVALUATORTGT)
 	-rmdir -p $(BUILDDIR)
 
 ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean)))

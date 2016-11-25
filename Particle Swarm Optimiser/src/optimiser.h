@@ -45,7 +45,7 @@ namespace pso {
 		int n_threads = 1;
 		int neighbourhood_size = 3;
 
-		shared_ptr<optimiserlogging> _logger;
+		optimiserlogging* logger = nullptr;
 
 #pragma region run options
 		uint32_t max_cycles = numeric_limits<uint32_t>::max();
@@ -86,20 +86,19 @@ namespace pso {
 		void enable_parallel(int n_threads);
 		void set_neighbourhood_size(int neighbourhood_size);
 
-		shared_ptr<problem_base> problem() {
-			return _problem;
+		void set_logger(optimiserlogging* logger)
+		{
+			this->logger = logger;
 		}
 
-		shared_ptr<optimiserlogging> logger() {
-			return _logger;
+		shared_ptr<problem_base> problem() {
+			return _problem;
 		}
 
 		static shared_ptr<optimiser> create_optimiser(shared_ptr<pso::problem_base> problem)
 		{
 			shared_ptr<optimiser> o(new optimiser(problem));
 
-			o->_logger = make_shared<optimiserlogging>(o);
-			
 			return o;
 		}
 

@@ -18,6 +18,7 @@ namespace pso {
 			double best;
 			double average;
 			double worst;
+			double avgdist;
 		};
 
 	private:

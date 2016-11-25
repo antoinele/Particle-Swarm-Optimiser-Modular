@@ -17,8 +17,11 @@ private:
 public:
 	shippingproblem(string csvfile);
 	vector<vector<double>> bounds();
-	//bool is_valid(coordinate c);
+	//bool is_valid(coordinate c); // default is fine
 	double evaluate(coordinate c);
 
-	bool comparator(double a, double b);
+	inline bool comparator(double a, double b)
+	{
+		return a < b;
+	}
 };

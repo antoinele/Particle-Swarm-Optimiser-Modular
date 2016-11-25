@@ -31,16 +31,21 @@ void optimiserlogging::dorecord(uint32_t cycle)
 	prev_count = realcount;
 
 	bool set = false;
-	double best, avg = 0, worst;
+	double best = 0, avg = 0, worst = 0;
+	double avgdistance = 0;
+	coordinate prevpos;
 	
 	auto op2 = op.lock();
 
 	for (auto p : op2->particles)
 	{
-		double fitness = op2->problem()->evaluate(p->position());
+		coordinate cpos(p->position());
+		double fitness = op2->problem()->evaluate(cpos);
 		if (!set)
 		{
+			set = true;
 			best = worst = fitness;
+			prevpos = cpos;
 		}
 		else
 		{
@@ -53,12 +58,27 @@ void optimiserlogging::dorecord(uint32_t cycle)
 			{
 				worst = fitness;
 			}
+
+			double dist = 0;
+			for (size_t i = 0; i < cpos.size(); i++)
+			{
+				double a;
+				a = cpos[i] - prevpos[i];
+				a = abs(a);
+				a *= a;
+
+				dist += a;
+			}
+			dist /= cpos.size();
+
+			avgdistance += dist;
 		}
 
 		avg += fitness;
 	}
 
 	avg /= op2->particles.size();
+	avgdistance /= op2->particles.size();
 
 	record r;
 	r.cycle = realcount;
@@ -66,13 +86,14 @@ void optimiserlogging::dorecord(uint32_t cycle)
 	r.best = best;
 	r.average = avg;
 	r.worst = worst;
+	r.avgdist = avgdistance;
 
 	records.push_back(r);
 }
 
 void pso::optimiserlogging::writeout(ostream* logfile)
 {
-	*logfile << "cycle,g_best,best,average,worst" << endl;
+	*logfile << "cycle,g_best,best,average,worst,avgdist" << endl;
 
 	for (auto r : records)
 	{
@@ -82,8 +103,6 @@ void pso::optimiserlogging::writeout(ostream* logfile)
 			<< r.best << ","
 			<< r.average << ","
 			<< r.worst << ","
-			<< endl;
+			<< r.avgdist << endl;
 	}
-
-	//*logfile.close();
 }

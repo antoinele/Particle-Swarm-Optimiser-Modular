@@ -135,7 +135,7 @@ void particle::end_step()
 {
 	_position += _velocity;
 
-	// if the particle hits the edge, bounce back //simply bound the values instead now
+	// if the particle hits the edge, bound the values
 	for (int i = 0; i < n_dimensions; i++)
 	{
 		if (_position[i] > bounds[i][1])

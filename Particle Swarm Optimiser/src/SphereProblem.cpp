@@ -6,7 +6,7 @@ SphereProblem::SphereProblem(int n_dimensions) : n_dimensions(n_dimensions)
 {
 	for (size_t i = 0; i < n_dimensions; i++)
 	{
-		vector<double> bounds = { 1.0, 1.0 };
+		vector<double> bounds = { -1.0, 1.0 };
 		_bounds.push_back(bounds);
 	}
 }
@@ -41,9 +41,4 @@ double SphereProblem::evaluate(coordinate c)
 	}
 
 	return sqrt(d);
-}
-
-inline bool SphereProblem::comparator(double a, double b)
-{
-	return a < b;
 }

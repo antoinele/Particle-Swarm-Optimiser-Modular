@@ -126,7 +126,8 @@ void pso::optimiser::run_simulation()
 				do_cycle();
 			}
 
-			_logger->dorecord(cyclecount);
+			if(logger != nullptr)
+				logger->dorecord(cyclecount);
 
 			auto curtime = chrono::steady_clock().now();
 			cyclecount += CYCLE_SIZE;
@@ -153,7 +154,10 @@ void pso::optimiser::run_simulation()
 	chrono::duration<double> runtime = chrono::duration_cast<chrono::duration<double>>(endtime - starttime);
 
 	cerr << "Cycles taken: " << cyclecount << endl;
+	cerr << "Total samples (cycles*particles): " << cyclecount * particles.size() << endl;
 	cerr << "Total run time: " << runtime.count() << " seconds" << endl;
+	cerr << "Cycles/s: " << cyclecount / runtime.count() << endl;
+	cerr << "Samples/s: " << (cyclecount * particles.size()) / runtime.count() << endl;
 }
 
 void optimiser::enable_parallel(int parallel_jobs)
