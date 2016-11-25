@@ -98,158 +98,25 @@ double shippingproblem::evaluate(coordinate c)
 	assert(testdatasize > 0);
 	assert(testdata[0].size() - 1 == c.size());
 
-	volatile int testnum = 4;
-
-	//#if (!_OPENMP) || _OPENMP <= 201307
-	if (testnum == 0) {
-		for (size_t i = 0; i < testdatasize; ++i)
-		{
-			auto first = testdata[i].begin() + 1,
-				last = testdata[i].end();
-
-			double pload(0);
-
-			// sum of historical data * weights
-			for (auto i = first, j = c.begin(); i != last; ++i, ++j)
-			{
-				pload += (*i) * (*j);
-			}
-
-			// subtract the actual value to work out wastage
-			pload -= testdata[i][0];
-
-			//// normalise pload to % over estimate
-			//pload /= testdata[i][0];
-			//pload -= 1;
-
-			//// penalise for under estimating
-			//if (pload < 0)
-			//{
-			//	pload = 100000;
-			//	//pload = abs(pload) * 100000;
-			//}
-
-			pload = abs(pload);
-
-			score += pload;
-		}
-		//#else
-	}
-	if (testnum == 1) {
-		size_t n_samples = testdata[0].size() - 1;
-		#pragma omp simd 
-		for (size_t i = 0; i < testdatasize; ++i)
-		{
-			double pload(0);
-
-			// sum of historical data * weights
-			for (size_t j=1; j < n_samples; ++j)
-			{
-				pload += testdata[i][j] * c[j];
-			}
-
-			// subtract the actual value to work out wastage
-			pload -= testdata[i][0];
-
-			pload = abs(pload);
-
-			score += pload;
-		}
-	}
-	else if (testnum == 2) {
-		//vector<double> ploads(testdatasize);
-		double* ploads = new double[testdatasize];
-		size_t n_samples = testdata[0].size() - 1;
-		#pragma omp simd
-		for (size_t i = 0; i < testdatasize; ++i)
-		{
-			ploads[i] = -testdata[i][0];
-			// sum of historical data * weights
-			for (size_t j = 1; j < n_samples; j++)
-			{
-				ploads[i] += testdata[i][j] * c[j];
-			}
-
-			ploads[i] = abs(ploads[i]);
-		}
-
-		#pragma omp simd
-		for(size_t i=0; i<testdatasize; ++i)
-			score += ploads[i];
-
-		delete ploads;
-	}
-	else if (testnum == 3) {
-		//vector<double> ploads(testdatasize);
-		double* ploads = new double[testdatasize];
-		size_t n_samples = testdata[0].size() - 1;
-
-		#pragma omp simd
-		for (size_t i = 0; i < testdatasize; i++)
-		{
-			ploads[i] = -testdata[i][0];
-		}
-
-		#pragma omp simd collapse(2)
-		for (size_t i = 0; i < testdatasize; ++i)
-		{
-			// sum of historical data * weights
-			for (size_t j = 1; j < n_samples; j++)
-			{
-				ploads[i] += testdata[i][j] * c[j];
-			}
-		}
-
-		#pragma omp simd
-		for (size_t i = 0; i < testdatasize; i++)
-		{
-			ploads[i] = abs(ploads[i]);
-		}
-
-		#pragma omp simd
-		for (size_t i = 0; i<testdatasize; ++i)
-			score += ploads[i];
-
-		delete ploads;
-	}
-	else if (testnum == 4) {
-		double* ploads = new double[testdatasize];
-		size_t n_samples = testdata[0].size() - 1;
-
-		#pragma omp simd
-		for (size_t i = 0; i < testdatasize; i++)
-		{
-			ploads[i] = -testdata[i][0];
-		}
-
-		#pragma omp simd collapse(2)
-		for (size_t i = 0; i < testdatasize; ++i)
-		{
-			// sum of historical data * weights
-			for (size_t j = 1; j < n_samples; j++)
-			{
-				ploads[i] += testdata[i][j] * c[j];
-			}
-		}
-
-		#pragma omp simd
-		for (size_t i = 0; i < testdatasize; i++)
-		{
-			score += abs(ploads[i]);
-		}
-
-		//#pragma omp simd
-		//for (size_t i = 0; i<testdatasize; ++i)
-		//	score += ploads[i];
-
-		delete ploads;
-	}
-	else
+	size_t n_samples = testdata[0].size() - 1;
+	#pragma omp simd 
+	for (size_t i = 0; i < testdatasize; ++i)
 	{
-		cerr << "You did it wrong" << endl;
-		exit(1);
+		double pload(0);
+
+		// sum of historical data * weights
+		for (size_t j=1; j < n_samples; ++j)
+		{
+			pload += testdata[i][j] * c[j];
+		}
+
+		// subtract the actual value to work out wastage
+		pload -= testdata[i][0];
+
+		pload = abs(pload);
+
+		score += pload;
 	}
-	//#endif
 
 	// normalise score to the amount of available data
 	score /= testdata.size();
