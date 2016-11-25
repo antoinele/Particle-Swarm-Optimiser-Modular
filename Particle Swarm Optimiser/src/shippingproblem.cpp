@@ -10,6 +10,26 @@
 
 #include <omp.h>
 
+#define SHIPPINGPROB_USESIMD 1
+
+void shippingproblem::generatesimdtestdata()
+{
+	size_t n_rows, row_size;
+
+	n_rows = testdata.size();
+	row_size = testdata[0].size();
+	
+	simdtestdata = MatrixXd(n_rows, row_size);
+
+	for (size_t i = 0; i < n_rows; i++)
+	{
+		for (size_t j = 0; j < row_size; j++)
+		{
+			simdtestdata(i, j) = testdata[i][j];
+		}
+	}
+}
+
 shippingproblem::shippingproblem(string csvfile) : testdata()
 {
 	ifstream fh(csvfile);
@@ -55,6 +75,8 @@ shippingproblem::shippingproblem(string csvfile) : testdata()
 		testdata.push_back(linedata);
 	}
 
+	generatesimdtestdata();
+
 	//pso::print_vecvec<double>(&testdata);
 }
 
@@ -89,6 +111,7 @@ vector<vector<double>> shippingproblem::bounds()
 	return b;
 }
 
+#ifndef SHIPPINGPROB_USESIMD
 double shippingproblem::evaluate(coordinate c)
 {
 	double score(0);
@@ -98,29 +121,78 @@ double shippingproblem::evaluate(coordinate c)
 	assert(testdatasize > 0);
 	assert(testdata[0].size() - 1 == c.size());
 
-	size_t n_samples = testdata[0].size() - 1;
-	#pragma omp simd 
+
+//	#if (!_OPENMP) || _OPENMP <= 201307
 	for (size_t i = 0; i < testdatasize; ++i)
 	{
+		auto first = testdata[i].begin() + 1,
+			last = testdata[i].end();
+
 		double pload(0);
 
 		// sum of historical data * weights
-		for (size_t j=1; j < n_samples; ++j)
+		for (auto i = first, j = c.begin(); i != last; ++i, ++j)
 		{
-			pload += testdata[i][j] * c[j];
+			pload += (*i) * (*j);
 		}
 
 		// subtract the actual value to work out wastage
 		pload -= testdata[i][0];
 
+		//// normalise pload to % over estimate
+		//pload /= testdata[i][0];
+		//pload -= 1;
+
+		//// penalise for under estimating
+		//if (pload < 0)
+		//{
+		//	pload = 100000;
+		//	//pload = abs(pload) * 100000;
+		//}
+
 		pload = abs(pload);
 
 		score += pload;
 	}
+	//#else
+	//size_t n_samples = testdata[0].size() - 1;
+	//#pragma omp simd 
+	//for (size_t i = 0; i < testdatasize; ++i)
+	//{
+	//	double pload(0);
+
+	//	// sum of historical data * weights
+	//	for (size_t j=1; j < n_samples; ++j)
+	//	{
+	//		pload += testdata[i][j] * c[j];
+	//	}
+
+	//	// subtract the actual value to work out wastage
+	//	pload -= testdata[i][0];
+
+	//	pload = abs(pload);
+
+	//	score += pload;
+	//}
+	//
+	//#endif
 
 	// normalise score to the amount of available data
 	score /= testdata.size();
 
 	return score;
 }
+#else
+double shippingproblem::evaluate(coordinate c)
+{
+	VectorXd vc(c.size() + 1);
+	vc(0) = -1;
+	for (size_t i = 0; i < c.size(); i++)
+	{
+		vc(i + 1) = c[i];
+	}
+
+	return (simdtestdata * vc).cwiseAbs().mean();
+}
+#endif // !SHIPPINGPROB_USESIMD
 

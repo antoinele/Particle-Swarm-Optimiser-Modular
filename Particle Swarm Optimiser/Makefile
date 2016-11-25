@@ -1,8 +1,8 @@
 CXX				:= g++-6
 INCLUDES		:= -Isrc -I../packages/Eigen.3.2.9/build/native/include
 CFLAGS			:= -Wall -fopenmp
-CXXFLAGS		:= -std=c++14 -Wall -fopenmp
-LDFLAGS			:= -fopenmp
+CXXFLAGS		:= -std=c++14 -Wall -fopenmp -msse2 -mavx
+LDFLAGS			:= -fopenmp -msse2 -mavx
 SHAREDSOURCES	:= src/shippingproblem.cpp src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
 SOURCES			:= $(SHAREDSOURCES) src/main.cpp
 EXECUTABLE		:= pso
@@ -20,7 +20,7 @@ ifeq ($(DEBUG),1)
 	CXXFLAGS += -DDEBUG -g
 	BUILDDIR := $(DEBUGDIR)
 else
-	CXXFLAGS += -O3
+	CXXFLAGS += -O3 -g
 	LDFLAGS += -flto
 	BUILDDIR := $(RELEASEDIR)
 endif
