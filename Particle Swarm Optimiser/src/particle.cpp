@@ -13,7 +13,7 @@
 using namespace std;
 using namespace pso;
 
-particle::particle(shared_ptr<optimiser> optimiser)
+particle::particle(optimiser* optimiser)
 {
 	bounds = optimiser->problem()->bounds();
 	n_dimensions = (int)bounds.size();
@@ -37,8 +37,8 @@ particle::particle(shared_ptr<optimiser> optimiser)
     particle(optimiser, newposition, newvelocity);
 }
 
-particle::particle(shared_ptr<optimiser> optimiser, coordinate position, coordinate velocity)
-	: _optimiser(optimiser)
+particle::particle(optimiser* optimiser, coordinate position, coordinate velocity)
+	: opt(optimiser)
 {
 	bounds = optimiser->problem()->bounds();
 
@@ -60,14 +60,8 @@ particle::particle(shared_ptr<optimiser> optimiser, coordinate position, coordin
 	gen.reset();
 }
 
-inline bool pso::particle::comparator(double a, double b)
-{
-	return getOptimiser()->comparator(a, b);
-}
-
 VectorXd particle::find_nbest_position()
 {
-	auto opt = getOptimiser();
     VectorXd* cur_best_position = &_best_position;
 	double cur_best_fitness = opt->evaluator(best_position());
 
@@ -87,14 +81,7 @@ VectorXd particle::find_nbest_position()
 
 VectorXd pso::particle::find_gbest_position()
 {
-	auto opt = getOptimiser();
-	
 	return VectorXd::Map(opt->g_best.data(), opt->g_best.size());
-}
-
-double particle::evaluate()
-{
-	return getOptimiser()->evaluator(position());
 }
 
 void particle::move_step()
@@ -109,7 +96,7 @@ void particle::move_step()
 	else
 		neighborhood_best = find_gbest_position();
 
-	shared_ptr<pso_rng> rng(getOptimiser()->thread_rng());
+	shared_ptr<pso_rng> rng(opt->thread_rng());
 
 	uniform_real_distribution<double> dist(0.0, 1.0);
 

@@ -1,8 +1,8 @@
 CXX				:= g++-6
 INCLUDES		:= -Isrc -I../packages/Eigen.3.2.9/build/native/include
 CFLAGS			:= -Wall -fopenmp
-CXXFLAGS		:= -std=c++14 -Wall -fopenmp -msse2 -mavx
-LDFLAGS			:= -fopenmp -msse2 -mavx
+CXXFLAGS		:= -std=c++14 -Wall -fopenmp -march=native
+LDFLAGS			:= -fopenmp -march=native
 SHAREDSOURCES	:= src/shippingproblem.cpp src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
 SOURCES			:= $(SHAREDSOURCES) src/main.cpp
 EXECUTABLE		:= pso

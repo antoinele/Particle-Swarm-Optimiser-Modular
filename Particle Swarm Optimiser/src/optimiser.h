@@ -2,7 +2,6 @@
 
 #include "psotypes.h"
 #include "problem.h"
-#include "particle.h"
 #include "optimiserlogging.h"
 
 #include <vector>

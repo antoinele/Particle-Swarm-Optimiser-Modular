@@ -1,6 +1,7 @@
 #include "optimiser.h"
 #include "psotypes.h"
 #include "problem.h"
+#include "particle.h"
 #include <memory>
 #include <iterator>
 #include <limits>
@@ -48,7 +49,7 @@ void optimiser::add_solution(coordinate position)
 
 void optimiser::add_solution(coordinate position, coordinate velocity)
 {
-	shared_ptr<particle> particle = make_shared<pso::particle>(shared_from_this(), position, velocity);
+	shared_ptr<particle> particle = make_shared<pso::particle>(this, position, velocity);
 
 	if (!_problem->is_valid(position)) {
 		cerr << "Invalid solution added" << endl;

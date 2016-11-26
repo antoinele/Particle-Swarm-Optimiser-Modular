@@ -12,6 +12,7 @@
 #include "shippingproblem.h"
 #include "psotypes.h"
 #include "optimiser.h"
+#include "utilities.h"
 
 using namespace std;
 

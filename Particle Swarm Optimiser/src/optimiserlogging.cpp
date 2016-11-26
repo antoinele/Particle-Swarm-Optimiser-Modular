@@ -1,6 +1,6 @@
 #include "optimiserlogging.h"
 #include "optimiser.h"
-
+#include "particle.h"
 #include <iostream>
 #include <fstream>
 

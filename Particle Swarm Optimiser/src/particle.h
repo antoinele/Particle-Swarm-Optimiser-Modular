@@ -18,23 +18,20 @@ using namespace Eigen;
 
 namespace pso {
 
-	class optimiser;
-
     class particle
     {
     private:
 		int n_dimensions;
 		vector<vector<double>> bounds;
 
+		optimiser* opt;
+
 		/**
 		 * Return whether the left item is better than the right one
 		 */
-		bool comparator(double a, double b);
-
-		weak_ptr<optimiser> _optimiser;
-
-		inline shared_ptr<optimiser> getOptimiser() {
-			return _optimiser.lock();
+		inline bool comparator(double a, double b)
+		{
+			return opt->comparator(a, b);
 		}
 
         VectorXd find_nbest_position();
@@ -62,10 +59,13 @@ namespace pso {
         void move_step();
         void end_step();
 
-        double evaluate();
+		inline double evaluate()
+		{
+			return opt->evaluator(position());
+		}
 
-        particle(shared_ptr<optimiser> optimiser);
-		particle(shared_ptr<optimiser> optimiser, coordinate position, coordinate velocity);
+        particle(optimiser* optimiser);
+		particle(optimiser* optimiser, coordinate position, coordinate velocity);
 
         ~particle() {
 			//_optimiser.reset();
