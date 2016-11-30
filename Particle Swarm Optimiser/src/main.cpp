@@ -166,10 +166,12 @@ int main(int argc, char const *argv[])
 
 		cerr << "Fitness: " << c.second << endl;
 
+#ifdef DEBUG
 		if (!optimiser->problem()->is_valid(c.first))
 		{
 			cerr << "WARNING! Solution is invalid!" << endl;
 		}
+#endif
 
 		//print_solutions(pt, solutions);
 

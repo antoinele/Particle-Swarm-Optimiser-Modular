@@ -17,7 +17,7 @@ coordinate pso::generate_coordinate(const vector<vector<double>> *bounds, pso_rn
 
 	assert(bounds->size() > 0);
 
-	for (int i = 0; i < bounds->size(); ++i)
+	for (size_t i = 0; i < bounds->size(); ++i)
 	{
 		uniform_real_distribution<double> dist((*bounds)[i][0], (*bounds)[i][1]);
 
@@ -31,14 +31,14 @@ VectorXd pso::coordinateToVectorXd(const coordinate* c)
 {
 	VectorXd v(c->size());
 
-	for (int i = 0; i < c->size(); i++)
+	for (size_t i = 0; i < c->size(); i++)
 	{
 		double d = (*c)[i];
 		//assert(isfinite<double>(d));
 		v(i) = d;
 	}
 
-	assert(v.size() == c->size());
+	assert((size_t)v.size() == c->size());
 
 	return v;
 }
@@ -55,7 +55,7 @@ coordinate pso::vectorXdToCoordinate(const Eigen::VectorXd* v)
 		c[i] = d;
 	}
 
-	assert(c.size() == v->size());
+	assert(c.size() == (size_t)v->size());
 
 	return c;
 }

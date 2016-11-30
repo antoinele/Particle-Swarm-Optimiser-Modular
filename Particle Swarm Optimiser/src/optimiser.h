@@ -46,11 +46,9 @@ namespace pso {
 
 		optimiserlogging* logger = nullptr;
 
-#pragma region run options
 		uint32_t max_cycles = numeric_limits<uint32_t>::max();
 		uint32_t max_runtime = numeric_limits<uint32_t>::max();
 		double target_fitness;
-#pragma endregion
 
     public:
 		inline double evaluator(coordinate position)

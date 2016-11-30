@@ -10,7 +10,7 @@
 
 #include <omp.h>
 
-#define SHIPPINGPROB_USESIMD 1
+#define SHIPPINGPROB_USEEIGEN 1
 
 void shippingproblem::generatesimdtestdata()
 {
@@ -76,26 +76,7 @@ shippingproblem::shippingproblem(string csvfile) : testdata()
 	}
 
 	generatesimdtestdata();
-
-	//pso::print_vecvec<double>(&testdata);
 }
-
-//double shippingproblem::predict_load(vector<double>::iterator hd_start, vector<double>::iterator hd_end, coordinate* weights)
-//{
-//	//assert(historical_data->size() == weights->size());
-//
-//	double load = 0;
-//
-//	//for (int i = 0; i < historical_data->size(); ++i)
-//	for(auto i = hd_start, j = weights->begin(); i != hd_end; ++i, ++j)
-//	{
-//		load += (*i) * (*j);
-//	}
-//
-//	//load /= historical_data->size();
-//
-//	return load;
-//}
 
 vector<vector<double>> shippingproblem::bounds()
 {
@@ -111,7 +92,7 @@ vector<vector<double>> shippingproblem::bounds()
 	return b;
 }
 
-#ifndef SHIPPINGPROB_USESIMD
+#ifndef SHIPPINGPROB_USEEIGEN
 double shippingproblem::evaluate(coordinate c)
 {
 	double score(0);
@@ -194,5 +175,5 @@ double shippingproblem::evaluate(coordinate c)
 
 	return (simdtestdata * vc).cwiseAbs().mean();
 }
-#endif // !SHIPPINGPROB_USESIMD
+#endif // !SHIPPINGPROB_USEEIGEN
 

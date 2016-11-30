@@ -16,11 +16,11 @@ using namespace pso;
 particle::particle(optimiser* optimiser)
 {
 	bounds = optimiser->problem()->bounds();
-	n_dimensions = (int)bounds.size();
+	n_dimensions = bounds.size();
 
 	vector<vector<double>> vbounds;
 
-	for (int i = 0; i < n_dimensions; ++i)
+	for (size_t i = 0; i < n_dimensions; ++i)
 	{
 		vector<double> b = { -1, 1 };
 		vbounds.push_back(b);
@@ -55,7 +55,7 @@ particle::particle(optimiser* optimiser, coordinate position, coordinate velocit
 	_best_position = _position;
 	best_position_fitness = evaluate();
 
-	assert(_best_position.size() == n_dimensions);
+	assert((size_t)_best_position.size() == n_dimensions);
 
 	gen.reset();
 }
@@ -123,7 +123,7 @@ void particle::end_step()
 	_position += _velocity;
 
 	// if the particle hits the edge, bound the values
-	for (int i = 0; i < n_dimensions; i++)
+	for (size_t i = 0; i < n_dimensions; i++)
 	{
 		if (_position[i] > bounds[i][1])
 		{

@@ -21,7 +21,7 @@ namespace pso {
     class particle
     {
     private:
-		int n_dimensions;
+		size_t n_dimensions;
 		vector<vector<double>> bounds;
 
 		optimiser* opt;
