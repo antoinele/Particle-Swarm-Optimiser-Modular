@@ -1,13 +1,6 @@
-#include <vector>
-#include <random>
-#include <chrono>
-#include <memory>
-#include <cmath>
-#include <cstdlib>
-#include <algorithm>
 #include <iostream>
-#include <iterator>
 #include <fstream>
+#include <csignal>
 
 #include "shippingproblem.h"
 #include "psotypes.h"
@@ -15,6 +8,7 @@
 #include "utilities.h"
 
 using namespace std;
+using namespace pso;
 
 void print_help(string programname) {
 	cerr
@@ -39,6 +33,11 @@ void print_help(string programname) {
 		
 }
 
+shared_ptr<pso::optimiser> opt;
+bool sigintraised(false);
+
+void signalhandler(int sig);
+
 int main(int argc, char const *argv[])
 {
 	// Defaults
@@ -48,7 +47,7 @@ int main(int argc, char const *argv[])
 	int max_runtime = -1;
 	int n_threads = 1;
 	int neighbourhood_size = 1;
-	unsigned int seed = static_cast<unsigned int>(chrono::system_clock::now().time_since_epoch().count());
+	unsigned int seed = 0;
 	bool wait_after_end = false;
 	string csvfile;
 	string logfile;
@@ -126,15 +125,15 @@ int main(int argc, char const *argv[])
 		problem = make_shared<shippingproblem>(csvfile);
 	}
 
-	// Configure optimiser
-    shared_ptr<pso::optimiser> optimiser(pso::optimiser::create_optimiser(problem));
-	optimiserlogging logger(optimiser);
-	optimiser->set_seed(seed);
-	optimiser->enable_parallel(n_threads);
-	optimiser->set_neighbourhood_size(neighbourhood_size);
+	// Configure opt
+    opt = optimiser::create_optimiser(problem);
+	optimiserlogging logger(opt);
+	if(seed) opt->set_seed(seed);
+	opt->enable_parallel(n_threads);
+	opt->set_neighbourhood_size(neighbourhood_size);
 
 	if (!logfile.empty()) {
-		optimiser->set_logger(&logger);
+		opt->set_logger(&logger);
 	}
 
 	{	// Create initial solutions
@@ -145,21 +144,24 @@ int main(int argc, char const *argv[])
 		for (auto s : solutions)
 		{
 			assert(problem->is_valid(s));
-			optimiser->add_solution(s);
+			opt->add_solution(s);
 		}
 	}
 
 	// Set up simulation
-	optimiser->set_max_cycles(max_cycles);
-	optimiser->set_max_runtime(max_runtime);
-	optimiser->set_target_fitness(target_fitness);
+	opt->set_max_cycles(max_cycles);
+	opt->set_max_runtime(max_runtime);
+	opt->set_target_fitness(target_fitness);
 
 	// Loop to optionally continue after completion
 	while (1) {
-		optimiser->run_simulation();
+		// Enable signal handler to pause optimiser
+		signal(SIGINT, &signalhandler);
+
+		opt->run_simulation();
 
 		// Get best solution
-		auto c = optimiser->best_solution();
+		auto c = opt->best_solution();
 
 		// Print best solution
 		cerr << "Best solution: " << coordinateToString(&c.first) << endl;
@@ -167,29 +169,31 @@ int main(int argc, char const *argv[])
 		cerr << "Fitness: " << c.second << endl;
 
 #ifdef DEBUG
-		if (!optimiser->problem()->is_valid(c.first))
+		if (!opt->problem()->is_valid(c.first))
 		{
 			cerr << "WARNING! Solution is invalid!" << endl;
 		}
 #endif
 
-		//print_solutions(pt, solutions);
-
-		//optimiser.reset();
-
-		if (!wait_after_end) {
+		if (!sigintraised && !wait_after_end) {
 			goto exit;
 		}
 
+		// Disable signal handler until the optimiser is to continue
+		signal(SIGINT, SIG_DFL);
+
 		while (1) {
-			cerr << "Continue? y/N" << endl;
-			string input;
-			getline(cin, input);
+			cerr << "Continue? Y/n" << endl;
+			char in;
+			cin.read(&in, 1);
 			
-			if (input.size() == 0 || input[0] == 'n' || input[0] == 'N') {
+			if (in == '\r' || in == '\n') { // default
+				goto continuedone;
+			}
+			else if(in == 'n' || in == 'N') {
 				goto exit;
 			}
-			else if (input[0] == 'y' || input[0] == 'Y') {
+			else if (in == 'y' || in == 'Y') {
 				goto continuedone;
 			}
 		}
@@ -211,4 +215,13 @@ exit:
 	}
 	
     return 0;
+}
+
+void signalhandler(int sig)
+{
+	if (sig == SIGINT) {
+		sigintraised = true;
+		cerr << "SIGINT Caught. " << endl;
+		opt->stop_simulation();
+	}
 }

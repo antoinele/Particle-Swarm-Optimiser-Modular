@@ -12,6 +12,10 @@
 
 #define SHIPPINGPROB_USEEIGEN 1
 
+using namespace std;
+using namespace pso;
+using namespace Eigen;
+
 void shippingproblem::generatesimdtestdata()
 {
 	size_t n_rows, row_size;

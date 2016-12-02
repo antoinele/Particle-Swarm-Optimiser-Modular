@@ -2,21 +2,18 @@
 #define PARTICLE_H
 
 #include <vector>
-#include <random>
-#include <functional>
 #include <limits>
-#include <memory>
 
 #include "psotypes.h"
 #include "optimiser.h"
 #include "utilities.h"
 #include <Eigen/Dense>
 
-using namespace std;
-using namespace pso;
-using namespace Eigen;
-
 namespace pso {
+
+	using namespace std;
+	using namespace pso;
+	using namespace Eigen;
 
     class particle
     {
@@ -66,10 +63,6 @@ namespace pso {
 
         particle(optimiser* optimiser);
 		particle(optimiser* optimiser, coordinate position, coordinate velocity);
-
-        ~particle() {
-			//_optimiser.reset();
-        };
     };
 }
 

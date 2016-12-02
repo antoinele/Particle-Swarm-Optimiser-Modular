@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	}
 
 	cerr << "num weights: " << weights.size() << endl;
-	cerr << "weights: " << coordinateToString(&weights) << endl;
+	cerr << "weights: " << pso::coordinateToString(&weights) << endl;
 
 	shippingproblem sp(csvfile);
 

@@ -4,9 +4,8 @@
 #include <functional>
 #include <random>
 
-using namespace std;
-
 namespace pso {
+	using namespace std;
 
 	typedef vector<double> coordinate;
 	typedef function<double(coordinate)> evaluator_fn;

@@ -2,31 +2,25 @@
 
 #include "problem.h"
 #include <string>
+#include <vector>
 #include <Eigen/Dense>
 
-using namespace pso;
-using namespace std;
-using namespace Eigen;
-
-class shippingproblem : public problem_base
+class shippingproblem : public pso::problem_base
 {
 private:
 	size_t dimensions;
-	vector<vector<double>> testdata;
+	std::vector<std::vector<double>> testdata;
 
-	MatrixXd simdtestdata;
+	Eigen::MatrixXd simdtestdata;
 
 	void generatesimdtestdata();
 
-	//double predict_load(vector<double>::iterator hd_start, vector<double>::iterator hd_end, coordinate* weights);
-
 public:
-	shippingproblem(string csvfile);
+	shippingproblem(std::string csvfile);
 
-	vector<vector<double>> bounds();
+	std::vector<std::vector<double>> bounds();
 	//bool is_valid(coordinate c); // default is fine
-	double evaluate(coordinate c);
-	//double evaluate_simd(coordinate c);
+	double evaluate(pso::coordinate c);
 
 	inline bool comparator(double a, double b)
 	{

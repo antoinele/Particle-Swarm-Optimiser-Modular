@@ -116,6 +116,7 @@ void optimiser::init_simulation() {
 
 void pso::optimiser::run_simulation()
 {
+	pause = false;
 	auto starttime = chrono::steady_clock().now();
 	uint32_t cyclecount = 0;
 
@@ -127,7 +128,7 @@ void pso::optimiser::run_simulation()
 				do_cycle();
 			}
 
-			if(logger != nullptr)
+			if (logger != nullptr)
 				logger->dorecord(cyclecount);
 
 			auto curtime = chrono::steady_clock().now();
@@ -148,6 +149,10 @@ void pso::optimiser::run_simulation()
 			if (cyclecount >= max_cycles) {
 				break;
 			}
+
+			if (pause) {
+				break;
+			}
 		}
 	}
 
@@ -159,6 +164,11 @@ void pso::optimiser::run_simulation()
 	cerr << "Total run time: " << runtime.count() << " seconds" << endl;
 	cerr << "Cycles/s: " << cyclecount / runtime.count() << endl;
 	cerr << "Samples/s: " << (cyclecount * particles.size()) / runtime.count() << endl;
+}
+
+void pso::optimiser::stop_simulation()
+{
+	pause = true;
 }
 
 void optimiser::enable_parallel(int parallel_jobs)

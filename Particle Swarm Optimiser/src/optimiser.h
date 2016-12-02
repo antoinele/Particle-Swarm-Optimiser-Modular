@@ -5,17 +5,11 @@
 #include "optimiserlogging.h"
 
 #include <vector>
-#include <functional>
 #include <atomic>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-
-using namespace std;
 
 namespace pso {
 
-	//class optimiserlogging;
+	using namespace std;
 
 	class particle;
 
@@ -50,6 +44,8 @@ namespace pso {
 		uint32_t max_runtime = numeric_limits<uint32_t>::max();
 		double target_fitness;
 
+		bool pause = false;
+
     public:
 		inline double evaluator(coordinate position)
 		{
@@ -75,6 +71,7 @@ namespace pso {
 		void init_simulation();
 
 		void run_simulation();
+		void stop_simulation();
 
 		void set_max_cycles(uint32_t max_cycles) { this->max_cycles = max_cycles; }
 		void set_max_runtime(uint32_t max_runtime) { this->max_runtime = max_runtime; }

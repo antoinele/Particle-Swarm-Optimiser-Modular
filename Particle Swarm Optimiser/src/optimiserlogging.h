@@ -3,7 +3,6 @@
 #include <memory>
 #include <list>
 
-//using namespace pso;
 using namespace std;
 
 namespace pso {
