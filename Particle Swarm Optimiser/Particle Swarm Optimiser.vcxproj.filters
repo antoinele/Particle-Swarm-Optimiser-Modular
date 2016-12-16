@@ -16,7 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-    <Text Include="Makefile_" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\optimiser.h">

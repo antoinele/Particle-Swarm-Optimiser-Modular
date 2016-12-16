@@ -3,7 +3,9 @@
 #include <memory>
 #include <list>
 
-using namespace std;
+namespace {
+	using namespace std;
+}
 
 namespace pso {
 	class optimiser;

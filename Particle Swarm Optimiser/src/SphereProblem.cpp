@@ -1,6 +1,10 @@
 #include "SphereProblem.h"
 #include <cmath>
 #include <cassert>
+#include <vector>
+
+using namespace std;
+using namespace pso;
 
 SphereProblem::SphereProblem(int n_dimensions) : n_dimensions(n_dimensions)
 {

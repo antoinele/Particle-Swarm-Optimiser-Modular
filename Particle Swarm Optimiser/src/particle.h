@@ -9,11 +9,13 @@
 #include "utilities.h"
 #include <Eigen/Dense>
 
-namespace pso {
-
+namespace {
 	using namespace std;
 	using namespace pso;
 	using namespace Eigen;
+}
+
+namespace pso {
 
     class particle
     {
@@ -22,14 +24,6 @@ namespace pso {
 		vector<vector<double>> bounds;
 
 		optimiser* opt;
-
-		/**
-		 * Return whether the left item is better than the right one
-		 */
-		inline bool comparator(double a, double b)
-		{
-			return opt->comparator(a, b);
-		}
 
         VectorXd find_nbest_position();
 		VectorXd find_gbest_position();

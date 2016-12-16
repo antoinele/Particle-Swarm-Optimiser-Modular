@@ -69,7 +69,7 @@ VectorXd particle::find_nbest_position()
     {
         double fitness = opt->evaluator(i->best_position());
 
-        if(comparator(fitness, cur_best_fitness))
+        if(opt->comparator(fitness, cur_best_fitness))
         {
             cur_best_fitness = fitness;
             cur_best_position = &(i->_best_position);
@@ -140,7 +140,7 @@ void particle::end_step()
 	}
 
 	double cur_fitness = evaluate();
-	if (comparator(cur_fitness, best_position_fitness))
+	if (opt->comparator(cur_fitness, best_position_fitness))
 	{
 		_best_position = _position;
 		best_position_fitness = cur_fitness;

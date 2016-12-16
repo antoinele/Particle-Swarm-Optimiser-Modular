@@ -30,6 +30,12 @@ int main(int argc, char* argv[])
 
 	shippingproblem sp(csvfile);
 
+	if (sp.bounds().size() != weights.size()) {
+		cerr << "Incorrect number of weights given (" << weights.size() << ")" << endl;
+		cerr << "Expected: " << sp.bounds().size() << endl;
+		exit(1);
+	}
+
 	double fitness = sp.evaluate(weights);
 
 	cout << "Fitness: " << fitness << endl;

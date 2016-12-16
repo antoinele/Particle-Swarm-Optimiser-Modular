@@ -20,9 +20,9 @@ public:
 
 	std::vector<std::vector<double>> bounds();
 	//bool is_valid(coordinate c); // default is fine
-	double evaluate(pso::coordinate c);
+	double evaluate(const pso::coordinate &c);
 
-	inline bool comparator(double a, double b)
+	inline bool comparator(const double a, const double b)
 	{
 		return a < b;
 	}

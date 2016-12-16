@@ -29,35 +29,38 @@ coordinate pso::generate_coordinate(const vector<vector<double>> *bounds, pso_rn
 
 VectorXd pso::coordinateToVectorXd(const coordinate* c)
 {
-	VectorXd v(c->size());
+	return VectorXd::Map(c->data(), c->size());
+	//VectorXd v(c->size());
 
-	for (size_t i = 0; i < c->size(); i++)
-	{
-		double d = (*c)[i];
-		//assert(isfinite<double>(d));
-		v(i) = d;
-	}
+	//for (size_t i = 0; i < c->size(); i++)
+	//{
+	//	double d = (*c)[i];
+	//	//assert(isfinite<double>(d));
+	//	v(i) = d;
+	//}
 
-	assert((size_t)v.size() == c->size());
+	//assert((size_t)v.size() == c->size());
 
-	return v;
+	//return v;
 }
 
 coordinate pso::vectorXdToCoordinate(const Eigen::VectorXd* v)
 {
-	coordinate c(v->size());
-	c.resize(v->size());
+	return coordinate(v->data(), v->data() + v->size());
 
-	for (int i = 0; i < v->size(); i++)
-	{
-		double d = (*v)(i);
-		//assert(isfinite<double>(d));
-		c[i] = d;
-	}
+	//coordinate c(v->size());
+	////c.resize(v->size());
 
-	assert(c.size() == (size_t)v->size());
+	//for (int i = 0; i < v->size(); i++)
+	//{
+	//	double d = (*v)(i);
+	//	//assert(isfinite<double>(d));
+	//	c[i] = d;
+	//}
 
-	return c;
+	//assert(c.size() == (size_t)v->size());
+
+	//return c;
 }
 
 VectorXd pso::randomWeightVector(pso_rng * gen, const int n_dimensions)

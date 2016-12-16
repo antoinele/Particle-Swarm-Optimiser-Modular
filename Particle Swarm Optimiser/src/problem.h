@@ -22,13 +22,13 @@ namespace pso {
 			return true;
 		};
 
-		virtual double evaluate(coordinate) = 0;
+		virtual double evaluate(const coordinate&) = 0;
 
 		/**
 		 * Returning true means that a is better than b
 		 * Returning false means that b is better than a
 		 */
-		virtual bool comparator(double a, double b) = 0;
+		virtual bool comparator(const double a, const double b) = 0;
 	};
 
 }

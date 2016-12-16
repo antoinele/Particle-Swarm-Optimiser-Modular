@@ -7,9 +7,11 @@
 #include <vector>
 #include <atomic>
 
-namespace pso {
-
+namespace {
 	using namespace std;
+}
+
+namespace pso {
 
 	class particle;
 
@@ -30,7 +32,7 @@ namespace pso {
 		void evaluate_cycle_mt();
 
 		coordinate g_best;
-		double g_best_fitness = numeric_limits<double>::max();
+		double g_best_fitness;
 
 		uint64_t seed;
 		atomic_uint seed_count;
@@ -43,16 +45,18 @@ namespace pso {
 		uint32_t max_cycles = numeric_limits<uint32_t>::max();
 		uint32_t max_runtime = numeric_limits<uint32_t>::max();
 		double target_fitness;
+		double worst_fitness;
 
 		bool pause = false;
 
     public:
 		inline double evaluator(coordinate position)
 		{
+			assert(position.size() == _problem->bounds().size());
 			return _problem->evaluate(position);
 		}
 		// Return true if A is better than B
-		inline bool comparator(double a, double b)
+		inline bool comparator(const double a, const double b)
 		{
 			return _problem->comparator(a, b);
 		}

@@ -13,7 +13,7 @@ public:
 	bool is_valid(pso::coordinate c);
 	double evaluate(pso::coordinate c);
 
-	inline bool comparator(double a, double b)
+	inline bool comparator(const double a, const double b)
 	{
 		return a < b;
 	}

@@ -5,11 +5,14 @@
 #include <memory>
 #include <iterator>
 #include <limits>
-#include <vector>
 #include <ctime>
 #include <iomanip>
 #include <chrono>
 #include <iostream>
+
+#if _OPENMP
+#include <omp.h>
+#endif
 
 using namespace pso;
 using namespace std;
@@ -21,10 +24,16 @@ optimiser::optimiser(shared_ptr<pso::problem_base> problem)
 {
 	n_dimensions = _problem->bounds().size();
 
-	if (comparator(numeric_limits<double>::min(), numeric_limits<double>::max()))
+	if (comparator(numeric_limits<double>::min(), numeric_limits<double>::max())) {
 		target_fitness = numeric_limits<double>::min();
-	else
+		worst_fitness = numeric_limits<double>::max();
+	}
+	else {
 		target_fitness = numeric_limits<double>::max();
+		worst_fitness = numeric_limits<double>::min();
+	}
+
+	g_best_fitness = worst_fitness;
 
 	set_seed(time(NULL));
 }
@@ -120,39 +129,36 @@ void pso::optimiser::run_simulation()
 	auto starttime = chrono::steady_clock().now();
 	uint32_t cyclecount = 0;
 
-#pragma omp parallel num_threads(n_threads)
-	{
-		while (1) {
-			for (int i = 0; i < CYCLE_SIZE; i++)
-			{
-				do_cycle();
-			}
+	while (1) {
+		for (int i = 0; i < CYCLE_SIZE; i++)
+		{
+			do_cycle();
+		}
 
-			if (logger != nullptr)
-				logger->dorecord(cyclecount);
+		if (logger != nullptr)
+			logger->dorecord(cyclecount);
 
-			auto curtime = chrono::steady_clock().now();
-			cyclecount += CYCLE_SIZE;
+		auto curtime = chrono::steady_clock().now();
+		cyclecount += CYCLE_SIZE;
 
-			// stop if the target fitness has been reached
-			if (target_fitness < numeric_limits<double>::max() && comparator(g_best_fitness, target_fitness)) {
-				break;
-			}
+		// stop if the target fitness has been reached
+		if (target_fitness < numeric_limits<double>::max() && comparator(g_best_fitness, target_fitness)) {
+			break;
+		}
 
-			// stop if the max time has been reached
-			chrono::duration<double> elapsed_time = chrono::duration_cast<chrono::duration<double>>(curtime - starttime);
-			if (elapsed_time.count() >= max_runtime) {
-				break;
-			}
+		// stop if the max time has been reached
+		chrono::duration<double> elapsed_time = chrono::duration_cast<chrono::duration<double>>(curtime - starttime);
+		if (elapsed_time.count() >= max_runtime) {
+			break;
+		}
 
-			// stop if the maximum number of cycles has been reached
-			if (cyclecount >= max_cycles) {
-				break;
-			}
+		// stop if the maximum number of cycles has been reached
+		if (cyclecount >= max_cycles) {
+			break;
+		}
 
-			if (pause) {
-				break;
-			}
+		if (pause) {
+			break;
 		}
 	}
 
@@ -174,6 +180,14 @@ void pso::optimiser::stop_simulation()
 void optimiser::enable_parallel(int parallel_jobs)
 {
 	n_threads = parallel_jobs;
+/*
+#if _OPENMP
+	omp_set_dynamic(0);
+	omp_set_num_threads(n_threads);
+
+	omp_set_nested(1);
+#endif
+*/
 }
 
 void pso::optimiser::set_neighbourhood_size(int neighbourhood_size)
@@ -219,13 +233,13 @@ void optimiser::connect_neighbourhood(size_t average_neighbours)
 
 void optimiser::do_cycle()
 {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(n_threads)
 	for (int i = 0; i < (int)particles.size(); ++i)
 	{
 		particles[i]->move_step();
 	}
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(n_threads)
 	for (int i = 0; i < (int)particles.size(); ++i)
 	{
 		particles[i]->end_step();
@@ -236,9 +250,41 @@ void optimiser::do_cycle()
 
 void pso::optimiser::evaluate_cycle_mt()
 {
+#pragma omp parallel for num_threads(n_threads)
+	for (int i = 0; i<(int)particles.size(); i++)
+	{ // i must be a signed integer for compatibility with VS2015/OMP2.0
+		coordinate p = particles[i]->best_position();
+
+		double fitness = evaluator(p);
+
+#pragma omp critical 
+		{
+			if (comparator(fitness, g_best_fitness))
+			{
+				g_best = p;
+				g_best_fitness = fitness;
+			}
+		}
+	}
+}
+
+/*
+void pso::optimiser::evaluate_cycle_mt()
+{
+	static coordinate* cur_best(nullptr);
+	static double cur_best_fitness;
+#pragma omp threadprivate(cur_best, cur_best_fitness)
+
+	cur_best_fitness = worst_fitness;
+
+#if _OPENMP
+	vector<coordinate*> ts_best(n_threads);
+	vector<double> ts_best_fitness(n_threads);
+#endif
+
 #pragma omp parallel for
 	for (int i=0; i<(int)particles.size(); i++)
-	{
+	{ // i must be a signed integer for compatibility with VS2015
 		coordinate p = particles[i]->best_position();
 
 		double fitness = evaluator(p);
@@ -246,12 +292,47 @@ void pso::optimiser::evaluate_cycle_mt()
 		//double fitness = particle->evaluate();
 		if (comparator(fitness, g_best_fitness))
 		{
+			if (cur_best != nullptr)
+				delete cur_best;
 			//best_found = particle->position();
-			g_best = p;
-			g_best_fitness = fitness;
+			cur_best = new coordinate(p);
+			cur_best_fitness = fitness;
 		}
 	}
+
+#if _OPENMP
+#pragma omp parallel
+	{
+		int i = omp_get_thread_num();
+
+		ts_best[i] = cur_best;
+		ts_best_fitness[i] = cur_best_fitness;
+		
+		cur_best = nullptr;
+	}
+
+//#pragma omp critical
+	{
+		for (size_t i = 0; i < ts_best_fitness.size(); i++)
+		{
+			if (ts_best[i] == nullptr)
+				continue;
+
+			if (comparator(ts_best_fitness[i], g_best_fitness))
+			{
+				g_best = *ts_best[i];
+				g_best_fitness = ts_best_fitness[i];
+			}
+
+			delete ts_best[i];
+		}
+	}
+#else
+	g_best = *cur_best;
+	g_best_fitness = cur_best_fitness;
+#endif
 }
+*/
 
 shared_ptr<pso_rng> pso::optimiser::thread_rng()
 {

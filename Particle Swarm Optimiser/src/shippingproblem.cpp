@@ -16,6 +16,7 @@ using namespace std;
 using namespace pso;
 using namespace Eigen;
 
+// converts the raw CSV data into an Eigen matrix
 void shippingproblem::generatesimdtestdata()
 {
 	size_t n_rows, row_size;
@@ -25,6 +26,7 @@ void shippingproblem::generatesimdtestdata()
 	
 	simdtestdata = MatrixXd(n_rows, row_size);
 
+	// could be improved with Eigen mapping
 	for (size_t i = 0; i < n_rows; i++)
 	{
 		for (size_t j = 0; j < row_size; j++)
@@ -72,7 +74,7 @@ shippingproblem::shippingproblem(string csvfile) : testdata()
 			dimensions = linedata.size() - 1;
 		else if (linedata.size() - 1 != dimensions)
 		{
-			//invalid line
+			//invalid line, ignore
 			continue;
 		}
 
@@ -86,6 +88,9 @@ vector<vector<double>> shippingproblem::bounds()
 {
 	vector<vector<double>> b(dimensions);
 
+	// for the assignment, bounds of +/- 10 seem to give the best results
+	// however increasing the bounds beyond this doesn't hurt, it doesn't
+	// improve the quality of the solution either.
 	vector<double> ib = { -10.0, 10.0 };
 
 	for (size_t i = 0; i < dimensions; ++i)
@@ -106,8 +111,6 @@ double shippingproblem::evaluate(coordinate c)
 	assert(testdatasize > 0);
 	assert(testdata[0].size() - 1 == c.size());
 
-
-//	#if (!_OPENMP) || _OPENMP <= 201307
 	for (size_t i = 0; i < testdatasize; ++i)
 	{
 		auto first = testdata[i].begin() + 1,
@@ -139,28 +142,6 @@ double shippingproblem::evaluate(coordinate c)
 
 		score += pload;
 	}
-	//#else
-	//size_t n_samples = testdata[0].size() - 1;
-	//#pragma omp simd 
-	//for (size_t i = 0; i < testdatasize; ++i)
-	//{
-	//	double pload(0);
-
-	//	// sum of historical data * weights
-	//	for (size_t j=1; j < n_samples; ++j)
-	//	{
-	//		pload += testdata[i][j] * c[j];
-	//	}
-
-	//	// subtract the actual value to work out wastage
-	//	pload -= testdata[i][0];
-
-	//	pload = abs(pload);
-
-	//	score += pload;
-	//}
-	//
-	//#endif
 
 	// normalise score to the amount of available data
 	score /= testdata.size();
@@ -168,15 +149,26 @@ double shippingproblem::evaluate(coordinate c)
 	return score;
 }
 #else
-double shippingproblem::evaluate(coordinate c)
+double shippingproblem::evaluate(const coordinate &c)
 {
+	// create an Eigen vector of the same length as a row from the
+	// historical data.
 	VectorXd vc(c.size() + 1);
+
+	// set the weight of the first value to -1 as the 1st column in
+	// the historical data is the actual value so this will subtract
+	// it.
 	vc(0) = -1;
+
+	// copy the weights in, offset to skip the actual end of day
+	// value.
 	for (size_t i = 0; i < c.size(); i++)
 	{
 		vc(i + 1) = c[i];
 	}
 
+	// multiply the historical data by the weights, get the absolute
+	// values, then return the mean of those values.
 	return (simdtestdata * vc).cwiseAbs().mean();
 }
 #endif // !SHIPPINGPROB_USEEIGEN

@@ -40,9 +40,11 @@ EVALUATOROBJS = $(call srcs2obj, $(EVALUATORSRC))
 #DEPS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.d)))
 
 .SECONDARY: $(DEPS)
-.PHONY: all clean
+.PHONY: all clean evaluator
 
 all: $(TARGET) $(EVALUATORTGT)
+
+evaluator: $(EVALUATORTGT)
 
 $(TARGET): $(OBJECTS) | $(BUILDDIR)
 	$(CXX) $(LDFLAGS) $^ -o $@

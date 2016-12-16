@@ -15,6 +15,7 @@ void print_help(string programname) {
 		<< "Usage: " << programname << " [-options] <testdata.csv>" << endl
 		<< endl
 		<< "Options:" << endl
+		<< "  -h                 Prints this help message" << endl
 		<< "  -solutions <n>     Number of solutions (particles) to use" << endl
 		<< "  -seed <n>          Seed for random number generator" << endl
 		<< "  -wait              Pause after simulation is finished" << endl
@@ -27,14 +28,17 @@ void print_help(string programname) {
 		<< "                     will stop the program. Set to 0 for infinite runtime. Default is" << endl
 		<< "                     30s." << endl
 		<< "  -logfile <csv>	 Write statistics to the specified file. Specify `-` for stdout." << endl
+#if _OPENMP
 		<< "  -threads <n>       The number of threads to run in parallel. Default: 1." << endl
+#endif
 		<< "  -neighbours <n>    Set the average size of the neighbourhood. 0 means use g_best." << endl
 		<< "                     Default: 3." << endl;
 		
 }
 
+// global optimiser pointer for signal handler
 shared_ptr<pso::optimiser> opt;
-bool sigintraised(false);
+bool sigintraised = false;
 
 void signalhandler(int sig);
 
@@ -45,7 +49,9 @@ int main(int argc, char const *argv[])
 	int num_solutions = 10;
 	int max_cycles = -1;
 	int max_runtime = -1;
+#if _OPENMP
 	int n_threads = 1;
+#endif
 	int neighbourhood_size = 1;
 	unsigned int seed = 0;
 	bool wait_after_end = false;
@@ -54,12 +60,22 @@ int main(int argc, char const *argv[])
 
 	shared_ptr<problem_base> problem;
 
+	if (argc == 1) {
+		print_help(argv[0]);
+		exit(0);
+	}
+
 	// Parse arguments
 	for (int i = 1; i < argc; i++)
 	{
 		if (argv[i][0] == '-')
 		{
-			if (strcmp(argv[i], "-solutions") == 0)
+			if (strcmp(argv[i], "-h") == 0)
+			{
+				print_help(argv[0]);
+				exit(0);
+			}
+			else if (strcmp(argv[i], "-solutions") == 0)
 			{
 				num_solutions = atoi(argv[++i]);
 			}
@@ -87,10 +103,12 @@ int main(int argc, char const *argv[])
 			{
 				logfile = argv[++i];
 			}
+#if _OPENMP
 			else if (strcmp(argv[i], "-threads") == 0)
 			{
 				n_threads = atoi(argv[++i]);
 			}
+#endif
 			else if (strcmp(argv[i], "-neighbours") == 0)
 			{
 				neighbourhood_size = atoi(argv[++i]);
@@ -129,8 +147,10 @@ int main(int argc, char const *argv[])
     opt = optimiser::create_optimiser(problem);
 	optimiserlogging logger(opt);
 	if(seed) opt->set_seed(seed);
-	opt->enable_parallel(n_threads);
 	opt->set_neighbourhood_size(neighbourhood_size);
+#if _OPENMP
+	opt->enable_parallel(n_threads);
+#endif
 
 	if (!logfile.empty()) {
 		opt->set_logger(&logger);
@@ -184,8 +204,8 @@ int main(int argc, char const *argv[])
 
 		while (1) {
 			cerr << "Continue? Y/n" << endl;
-			char in;
-			cin.read(&in, 1);
+			char in = cin.get();
+			//cin.read(&in, 1);
 			
 			if (in == '\r' || in == '\n') { // default
 				goto continuedone;
