@@ -15,11 +15,8 @@ namespace pso {
 
 	class neighbourhood_base
 	{
-	private:
-		optimiser* op;
-
 	public:
-		neighbourhood_base(optimiser* op);
+		neighbourhood_base();
 		virtual ~neighbourhood_base();
 
 		virtual void init_neighbourhood() = 0;

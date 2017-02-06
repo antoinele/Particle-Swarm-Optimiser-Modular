@@ -2,7 +2,7 @@
 
 using namespace pso;
 
-pso::neighbourhood_base::neighbourhood_base(optimiser* op) : op(op)
+pso::neighbourhood_base::neighbourhood_base()
 {
 }
 

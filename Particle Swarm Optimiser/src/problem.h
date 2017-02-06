@@ -43,6 +43,11 @@ namespace pso {
 		virtual bool comparator(const double a, const double b) = 0;
 
 		static std::map<string, problemfactory> registered_problems;
-		static void register_problem(string name, problemfactory factory);
+		static void register_problem(string name, problemfactory factory)
+		{
+			assert(registered_problems.count(name) == 0);
+
+			registered_problems[name] = factory;
+		}
 	};
 }

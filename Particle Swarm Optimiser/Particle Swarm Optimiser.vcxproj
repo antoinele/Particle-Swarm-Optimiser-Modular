@@ -170,11 +170,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="argparser.h" />
     <ClInclude Include="src\neighbourhood.h" />
     <ClInclude Include="src\init.h" />
     <ClInclude Include="src\optimiserlogging.h" />
-    <ClInclude Include="src\SphereProblem.h" />
     <ClInclude Include="src\utilities.h" />
     <ClInclude Include="src\problem.h" />
     <ClInclude Include="src\psotypes.h" />
@@ -182,13 +180,11 @@
     <ClInclude Include="src\particle.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="argparser.cpp" />
     <ClCompile Include="src\neighbourhoods\g_best.cpp" />
+    <ClCompile Include="src\neighbourhoods\Makefile" />
     <ClCompile Include="src\problems\sphereproblem.cpp" />
     <ClCompile Include="src\neighbourhood.cpp" />
     <ClCompile Include="src\optimiserlogging.cpp" />
-    <ClCompile Include="src\problem.cpp" />
-    <ClCompile Include="src\SphereProblem.cpp" />
     <ClCompile Include="src\utilities.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\optimiser.cpp" />

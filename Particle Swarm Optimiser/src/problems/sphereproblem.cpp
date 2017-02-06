@@ -17,11 +17,11 @@ private:
 	vector<vector<double>> _bounds;
 public:
 	sphereproblem(int n_dimensions);
-	vector<vector<double>> bounds();
-	bool is_valid(pso::coordinate c);
-	double evaluate(pso::coordinate c);
+	virtual vector<vector<double>> bounds();
+	virtual bool is_valid(pso::coordinate c);
+	virtual double evaluate(pso::coordinate c);
 
-	inline bool comparator(const double a, const double b)
+	virtual inline bool comparator(const double a, const double b)
 	{
 		return a < b;
 	}
@@ -72,7 +72,7 @@ void sphereproblem_help() {
 	cerr
 		<< "sphere problem arguments" << endl
 		<< "  -h      Prints this help message" << endl
-		<< "  -d <n>  Sets the number of dimensions. (default: 3)" << endl
+		<< "  -d <n>  Sets the number of dimensions. (default: 3)" << endl;
 }
 
 shared_ptr<pso::problem_base> sphereproblem_factory(vector<string> args)
@@ -103,5 +103,5 @@ shared_ptr<pso::problem_base> sphereproblem_factory(vector<string> args)
 
 void sphereproblem_init()
 {
-	register_problem("sphereproblem", &sphereproblem_factory);
+	problem_base::register_problem("sphereproblem", &sphereproblem_factory);
 }

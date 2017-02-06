@@ -30,9 +30,6 @@
     <ClInclude Include="src\utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\SphereProblem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\optimiserlogging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,9 +40,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\neighbourhood.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="argparser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,22 +56,19 @@
     <ClCompile Include="src\utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\SphereProblem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\optimiserlogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\neighbourhood.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\problem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\problems\sphereproblem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="argparser.cpp">
+    <ClCompile Include="src\neighbourhoods\g_best.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\neighbourhoods\Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

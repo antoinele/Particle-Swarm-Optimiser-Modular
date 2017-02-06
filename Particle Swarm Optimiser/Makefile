@@ -3,7 +3,7 @@ INCLUDES		:= -Isrc -I../packages/Eigen.3.2.9/build/native/include
 CFLAGS			:= -Wall -fopenmp
 CXXFLAGS		:= -std=c++14 -Wall -fopenmp -march=native -mtune=generic
 LDFLAGS			:= -fopenmp -march=native -mtune=generic
-SHAREDSOURCES	:= src/shippingproblem.cpp src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
+SHAREDSOURCES	:= src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
 SOURCES			:= $(SHAREDSOURCES) src/main.cpp
 
 MODULEDIRS		:= src/neighbourhoods src/problems

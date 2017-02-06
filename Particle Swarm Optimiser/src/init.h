@@ -24,13 +24,13 @@ extern initcall_t __start_initcalls[], __stop_initcalls[];
 #pragma section(".initmod$u")
 #pragma section(".initmod$z", read)
 
-__declspec(allocate(".init$a")) initcall_t __start_initcalls_seg;
-__declspec(allocate(".init$z")) initcall_t __stop_initcalls_seg;
+__declspec(allocate(".initmod$a")) initcall_t __start_initcalls_seg;
+__declspec(allocate(".initmod$z")) initcall_t __stop_initcalls_seg;
 
 initcall_t* __start_initcalls = &__start_initcalls_seg;
 initcall_t* __stop_initcalls = &__stop_initcalls_seg;
 
 #define module_init(fn) \
-	__declspec(allocate(".init$u")) static initcall_t __initcall_##fn = fn;
+	__declspec(allocate(".initmod$u")) static initcall_t __initcall_##fn = fn;
 
 #endif
