@@ -5,7 +5,6 @@
 #include <limits>
 
 #include "psotypes.h"
-#include "optimiser.h"
 #include "utilities.h"
 #include <Eigen/Dense>
 
@@ -17,6 +16,8 @@ namespace {
 
 namespace pso {
 
+	class optimiser;
+
     class particle
     {
     private:
@@ -27,6 +28,8 @@ namespace pso {
 
         VectorXd find_nbest_position();
 		VectorXd find_gbest_position();
+
+		inline VectorXd find_lbest();
 
         VectorXd _velocity;
 		VectorXd _position;
@@ -50,10 +53,7 @@ namespace pso {
         void move_step();
         void end_step();
 
-		inline double evaluate()
-		{
-			return opt->evaluator(position());
-		}
+		inline double evaluate();
 
         particle(optimiser* optimiser);
 		particle(optimiser* optimiser, coordinate position, coordinate velocity);

@@ -84,6 +84,11 @@ VectorXd pso::particle::find_gbest_position()
 	return VectorXd::Map(opt->g_best.data(), opt->g_best.size());
 }
 
+inline VectorXd pso::particle::find_lbest()
+{
+	return opt->_neighbourhood->find_lbest(this);
+}
+
 void particle::move_step()
 {
 	double c1, c2, r1, r2;
@@ -145,4 +150,9 @@ void particle::end_step()
 		_best_position = _position;
 		best_position_fitness = cur_fitness;
 	}
+}
+
+inline double pso::particle::evaluate()
+{
+	return opt->evaluator(position());
 }

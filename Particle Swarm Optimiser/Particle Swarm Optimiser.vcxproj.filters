@@ -33,13 +33,19 @@
     <ClInclude Include="src\SphereProblem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\shippingproblem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\optimiserlogging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\problem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\init.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\neighbourhood.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="argparser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,10 +65,19 @@
     <ClCompile Include="src\SphereProblem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\shippingproblem.cpp">
+    <ClCompile Include="src\optimiserlogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\optimiserlogging.cpp">
+    <ClCompile Include="src\neighbourhood.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problems\sphereproblem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="argparser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

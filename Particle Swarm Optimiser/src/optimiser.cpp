@@ -19,8 +19,7 @@ using namespace std;
 
 #define CYCLE_SIZE 100
 
-optimiser::optimiser(shared_ptr<pso::problem_base> problem) 
-                     : _problem(problem)
+optimiser::optimiser() 
 {
 	n_dimensions = _problem->bounds().size();
 
@@ -118,9 +117,16 @@ pair<coordinate, double> optimiser::best_solution()
 void optimiser::init_simulation() {
 	static bool initialised = false;
 	if (!initialised) {
-		connect_neighbourhood(neighbourhood_size);
+		_neighbourhood->init_neighbourhood();
 		initialised = true;
 	}
+}
+
+void pso::optimiser::set_neighbourhood(shared_ptr<neighbourhood_base> neighbourhood)
+{
+	assert(!_neighbourhood);
+
+	_neighbourhood = neighbourhood;
 }
 
 void pso::optimiser::run_simulation()
@@ -190,45 +196,15 @@ void optimiser::enable_parallel(int parallel_jobs)
 */
 }
 
-void pso::optimiser::set_neighbourhood_size(int neighbourhood_size)
+void pso::optimiser::set_logger(optimiserlogging * logger)
 {
-	this->neighbourhood_size = neighbourhood_size;
+	this->logger = logger;
 }
 
-void optimiser::connect_neighbourhood(size_t average_neighbours)
+void pso::optimiser::set_problem(shared_ptr<problem_base> problem)
 {
-	uniform_int_distribution<int> dist(0, (int)particles.size() - 1);
-
-	auto rng = thread_rng();
-
-	for (auto p : particles)
-	{
-		for (size_t i = 0; i < average_neighbours; i++)
-		{
-			int stuck = 0;
-
-			while (true) {
-				int newindex = dist(*rng);
-				shared_ptr<particle> nextparticle = particles[newindex];
-				auto* neighbours = &nextparticle->neighbours;
-
-				if (find(neighbours->begin(), neighbours->end(), nextparticle.get()) != neighbours->end() ||
-					nextparticle->neighbours.size() > average_neighbours)
-				{
-					if (stuck > particles.size() * 0.9f) {
-						cerr << "Couldn't pick neighbours" << endl;
-						break;
-					}
-
-					stuck++;
-					continue;
-				}
-				
-				p->neighbours.push_back(nextparticle.get());
-				break;
-			}
-		}
-	}
+	assert(!_problem); // this shouldn't really be called after the program starts
+	_problem = problem;
 }
 
 void optimiser::do_cycle()

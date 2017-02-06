@@ -1,18 +1,22 @@
 #include <iostream>
 #include <fstream>
 #include <csignal>
+#include <map>
 
-#include "shippingproblem.h"
 #include "psotypes.h"
 #include "optimiser.h"
 #include "utilities.h"
+
+#include <init.h>
+#include <problem.h>
+#include <neighbourhood.h>
 
 using namespace std;
 using namespace pso;
 
 void print_help(string programname) {
 	cerr
-		<< "Usage: " << programname << " [-options] <testdata.csv>" << endl
+		<< "Usage: " << programname << " [-options] -N neighbourhood [-options] -P problem [-options]" << endl
 		<< endl
 		<< "Options:" << endl
 		<< "  -h                 Prints this help message" << endl
@@ -31,16 +35,35 @@ void print_help(string programname) {
 #if _OPENMP
 		<< "  -threads <n>       The number of threads to run in parallel. Default: 1." << endl
 #endif
-		<< "  -neighbours <n>    Set the average size of the neighbourhood. 0 means use g_best." << endl
-		<< "                     Default: 3." << endl;
-		
+		;
 }
 
 // global optimiser pointer for signal handler
 shared_ptr<pso::optimiser> opt;
 bool sigintraised = false;
 
-void signalhandler(int sig);
+void signalhandler(int sig)
+{
+	if (sig == SIGINT) {
+		sigintraised = true;
+		cerr << "SIGINT Caught. " << endl;
+		opt->stop_simulation();
+	}
+}
+
+void do_initcalls() {
+	for (initcall_t* fn = __start_initcalls; fn < __stop_initcalls; fn++)
+	{
+		/**
+		 * Windows executable sections are 256 byte aligned and zero padded
+		 * so check if the pointer isn't 0 before calling.
+		 */
+#ifdef _MSC_VER
+		if(fn != 0)
+#endif
+			(*fn)();
+	}
+}
 
 int main(int argc, char const *argv[])
 {
@@ -52,76 +75,107 @@ int main(int argc, char const *argv[])
 #if _OPENMP
 	int n_threads = 1;
 #endif
-	int neighbourhood_size = 1;
 	unsigned int seed = 0;
 	bool wait_after_end = false;
-	string csvfile;
 	string logfile;
 
-	shared_ptr<problem_base> problem;
+	string neighbourhood_name;
+	string problem_name;
+
+	vector<string> neighbourhood_args;
+	vector<string> problem_args;
 
 	if (argc == 1) {
 		print_help(argv[0]);
 		exit(0);
 	}
-
-	// Parse arguments
-	for (int i = 1; i < argc; i++)
+	
 	{
-		if (argv[i][0] == '-')
+		enum argparsestate {
+			NORMAL, NEIGHBOURHOOD, PROBLEM
+		} argparsestate = NORMAL;
+		int i = 0;
+	// Parse normal arguments
+		for (i = 1; i < argc; i++)
 		{
-			if (strcmp(argv[i], "-h") == 0)
-			{
-				print_help(argv[0]);
-				exit(0);
-			}
-			else if (strcmp(argv[i], "-solutions") == 0)
-			{
-				num_solutions = atoi(argv[++i]);
-			}
-			else if (strcmp(argv[i], "-seed") == 0)
-			{
-				seed = atoi(argv[++i]);
-			}
-			else if (strcmp(argv[i], "-wait") == 0)
-			{
-				wait_after_end = true;
-			}
-			else if (strcmp(argv[i], "-maxcycles") == 0)
-			{
-				max_cycles = atoi(argv[++i]);
-			}
-			else if (strcmp(argv[i], "-targetfitness") == 0)
-			{
-				target_fitness = atof(argv[++i]);
-			}
-			else if (strcmp(argv[i], "-maxruntime") == 0)
-			{
-				max_runtime = atoi(argv[++i]);
-			}
-			else if (strcmp(argv[i], "-logfile") == 0)
-			{
-				logfile = argv[++i];
-			}
+			if (argparsestate == NORMAL) {
+				if (strcmp(argv[i], "-h") == 0)
+				{
+					print_help(argv[0]);
+					exit(0);
+				}
+				else if (strcmp(argv[i], "-solutions") == 0)
+				{
+					num_solutions = atoi(argv[++i]);
+				}
+				else if (strcmp(argv[i], "-seed") == 0)
+				{
+					seed = atoi(argv[++i]);
+				}
+				else if (strcmp(argv[i], "-wait") == 0)
+				{
+					wait_after_end = true;
+				}
+				else if (strcmp(argv[i], "-maxcycles") == 0)
+				{
+					max_cycles = atoi(argv[++i]);
+				}
+				else if (strcmp(argv[i], "-targetfitness") == 0)
+				{
+					target_fitness = atof(argv[++i]);
+				}
+				else if (strcmp(argv[i], "-maxruntime") == 0)
+				{
+					max_runtime = atoi(argv[++i]);
+				}
+				else if (strcmp(argv[i], "-logfile") == 0)
+				{
+					logfile = argv[++i];
+				}
 #if _OPENMP
-			else if (strcmp(argv[i], "-threads") == 0)
-			{
-				n_threads = atoi(argv[++i]);
-			}
+				else if (strcmp(argv[i], "-threads") == 0)
+				{
+					n_threads = atoi(argv[++i]);
+				}
 #endif
-			else if (strcmp(argv[i], "-neighbours") == 0)
-			{
-				neighbourhood_size = atoi(argv[++i]);
+				else if (strcmp(argv[i], "-N") == 0)
+				{
+					argparsestate = NEIGHBOURHOOD;
+					neighbourhood_name = argv[++i];
+				}
+				else if (strcmp(argv[i], "-P") == 0)
+				{
+					argparsestate = PROBLEM;
+					problem_name = argv[++i];
+				}
+				else {
+					cerr << "Unknown argument: " << argv[i] << endl;
+					print_help(argv[0]);
+					exit(1);
+				}
 			}
-			else {
-				cerr << "Unknown argument: " << argv[i] << endl;
-				print_help(argv[0]);
-				exit(1);
+			else if (argparsestate == NEIGHBOURHOOD) {
+				if (strcmp(argv[i], "-P") == 0)
+				{
+					argparsestate = PROBLEM;
+					problem_name = argv[++i];
+				}
+				else
+				{
+					neighbourhood_args.push_back(argv[i]);
+				}
 			}
-		}
-		else
-		{
-			csvfile = argv[i];
+			else if (argparsestate == PROBLEM) {
+				if (strcmp(argv[i], "-N") == 0)
+				{
+					argparsestate = NEIGHBOURHOOD;
+					neighbourhood_name = argv[++i];
+				}
+				else
+				{
+					problem_args.push_back(argv[i]);
+				}
+			}
 		}
 	}
 
@@ -139,15 +193,54 @@ int main(int argc, char const *argv[])
 		}
 	}
 
+	do_initcalls();
+
+
+	shared_ptr<problem_base> problem;
 	{	// Set up problem
-		problem = make_shared<shippingproblem>(csvfile);
+		if (problem_base::registered_problems.count(problem_name) == 0)
+		{
+			cerr << "Problem not found: " << problem_name << endl;
+
+			cerr << "Available problems:" << endl;
+
+			for (auto const& p : problem_base::registered_problems)
+			{
+				cerr << "  " << p.first << endl;
+			}
+
+			return 1;
+		}
+
+		problemfactory pf = problem_base::registered_problems[problem_name];
+		problem = pf(problem_args);
+	}
+
+	shared_ptr<neighbourhood_base> neighbourhood;
+	{
+		if (neighbourhood_base::registered_neighbourhoods.count(neighbourhood_name) == 0)
+		{
+			cerr << "Neighbourhood not found: " << neighbourhood_name << endl;
+
+			cerr << "Available neighbourhoods:" << endl;
+
+			for (auto const& p : neighbourhood_base::registered_neighbourhoods)
+			{
+				cerr << "  " << p.first << endl;
+			}
+			return 1;
+		}
+
+		neighbourhoodfactory nf = neighbourhood_base::registered_neighbourhoods[neighbourhood_name];
+		neighbourhood = nf(neighbourhood_args);
 	}
 
 	// Configure opt
-    opt = optimiser::create_optimiser(problem);
+    opt = optimiser::get_optimiser();
+	opt->set_problem(problem);
+	opt->set_neighbourhood(neighbourhood);
 	optimiserlogging logger(opt);
 	if(seed) opt->set_seed(seed);
-	opt->set_neighbourhood_size(neighbourhood_size);
 #if _OPENMP
 	opt->enable_parallel(n_threads);
 #endif
@@ -195,6 +288,7 @@ int main(int argc, char const *argv[])
 		}
 #endif
 
+		// if -wait isn't specified, exit
 		if (!sigintraised && !wait_after_end) {
 			goto exit;
 		}
@@ -235,13 +329,4 @@ exit:
 	}
 	
     return 0;
-}
-
-void signalhandler(int sig)
-{
-	if (sig == SIGINT) {
-		sigintraised = true;
-		cerr << "SIGINT Caught. " << endl;
-		opt->stop_simulation();
-	}
 }

@@ -2,13 +2,25 @@
 
 #include <psotypes.h>
 #include <cassert>
+#include <string>
+#include <memory>
+#include <map>
+
+namespace {
+	using namespace std;
+}
 
 namespace pso {
+
+	class problem_base;
+
+	typedef shared_ptr<pso::problem_base>(*problemfactory)(vector<string> args);
 
 	class problem_base {
 	public:
 		virtual vector<vector<double>> bounds() = 0;
-		bool is_valid(coordinate c) {
+		virtual bool is_valid(coordinate c) {
+			// default behaviour is to check each dimension is within bounds
 			auto b = bounds();
 			size_t n_dimensions(b.size());
 			assert(c.size() == n_dimensions);
@@ -29,6 +41,8 @@ namespace pso {
 		 * Returning false means that b is better than a
 		 */
 		virtual bool comparator(const double a, const double b) = 0;
-	};
 
+		static std::map<string, problemfactory> registered_problems;
+		static void register_problem(string name, problemfactory factory);
+	};
 }

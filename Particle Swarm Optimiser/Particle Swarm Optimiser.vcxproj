@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ParticleSwarmOptimiser</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>PSO Shipping Problem</ProjectName>
+    <ProjectName>PSO</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,19 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)\src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)\src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)\src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)\src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -170,8 +170,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="argparser.h" />
+    <ClInclude Include="src\neighbourhood.h" />
+    <ClInclude Include="src\init.h" />
     <ClInclude Include="src\optimiserlogging.h" />
-    <ClInclude Include="src\shippingproblem.h" />
     <ClInclude Include="src\SphereProblem.h" />
     <ClInclude Include="src\utilities.h" />
     <ClInclude Include="src\problem.h" />
@@ -180,8 +182,12 @@
     <ClInclude Include="src\particle.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="argparser.cpp" />
+    <ClCompile Include="src\neighbourhoods\g_best.cpp" />
+    <ClCompile Include="src\problems\sphereproblem.cpp" />
+    <ClCompile Include="src\neighbourhood.cpp" />
     <ClCompile Include="src\optimiserlogging.cpp" />
-    <ClCompile Include="src\shippingproblem.cpp" />
+    <ClCompile Include="src\problem.cpp" />
     <ClCompile Include="src\SphereProblem.cpp" />
     <ClCompile Include="src\utilities.cpp" />
     <ClCompile Include="src\main.cpp" />

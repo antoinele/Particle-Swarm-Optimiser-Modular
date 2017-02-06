@@ -1,8 +1,9 @@
 #pragma once
 
-#include "psotypes.h"
-#include "problem.h"
-#include "optimiserlogging.h"
+#include <psotypes.h>
+#include <problem.h>
+#include <neighbourhood.h>
+#include <optimiserlogging.h>
 
 #include <vector>
 #include <atomic>
@@ -20,15 +21,15 @@ namespace pso {
 		friend class optimiserlogging;
 		friend class particle;
     private:
+		static shared_ptr<optimiser> instance;
 		shared_ptr<problem_base> _problem;
-		optimiser(shared_ptr<problem_base> problem);
+		shared_ptr<neighbourhood_base> _neighbourhood;
+		optimiser();
 
         vector<shared_ptr<particle>> particles;
         size_t n_dimensions;
 
-        void connect_neighbourhood(size_t average_neighbours);
-
-		void do_cycle();
+        void do_cycle();
 		void evaluate_cycle_mt();
 
 		coordinate g_best;
@@ -38,7 +39,6 @@ namespace pso {
 		atomic_uint seed_count;
 
 		int n_threads = 1;
-		int neighbourhood_size = 3;
 
 		optimiserlogging* logger = nullptr;
 
@@ -74,6 +74,8 @@ namespace pso {
 
 		void init_simulation();
 
+		void set_neighbourhood(shared_ptr<neighbourhood_base> neighbourhood);
+
 		void run_simulation();
 		void stop_simulation();
 
@@ -82,22 +84,21 @@ namespace pso {
 		void set_target_fitness(double target_fitness) { this->target_fitness = target_fitness; }
 
 		void enable_parallel(int n_threads);
-		void set_neighbourhood_size(int neighbourhood_size);
 
-		void set_logger(optimiserlogging* logger)
-		{
-			this->logger = logger;
-		}
+		void set_logger(optimiserlogging* logger);
 
-		shared_ptr<problem_base> problem() {
+		inline shared_ptr<problem_base> problem() {
 			return _problem;
 		}
 
-		static shared_ptr<optimiser> create_optimiser(shared_ptr<pso::problem_base> problem)
-		{
-			shared_ptr<optimiser> o(new optimiser(problem));
+		void set_problem(shared_ptr<problem_base> problem);
 
-			return o;
+		static shared_ptr<optimiser> get_optimiser()
+		{
+			if(!instance)
+				instance = shared_ptr<optimiser>(new optimiser());
+			
+			return instance;
 		}
 
 		virtual ~optimiser();

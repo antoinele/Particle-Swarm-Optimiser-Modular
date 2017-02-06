@@ -5,12 +5,13 @@ CXXFLAGS		:= -std=c++14 -Wall -fopenmp -march=native -mtune=generic
 LDFLAGS			:= -fopenmp -march=native -mtune=generic
 SHAREDSOURCES	:= src/shippingproblem.cpp src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
 SOURCES			:= $(SHAREDSOURCES) src/main.cpp
+
+MODULEDIRS		:= src/neighbourhoods src/problems
+
 EXECUTABLE		:= pso
 
 EVALUATORSRC	:= $(SHAREDSOURCES) src/evaluatorcli.cpp
 EVALUATORBIN	:= evaluator
-#PREDICTORSRC	:= $(SHAREDSOURCES) src/predictorcli.cpp
-#PREDICTORBIN	:= predictor
 
 DEBUGDIR   := bin/Debug
 RELEASEDIR := bin/Release
@@ -40,7 +41,7 @@ EVALUATOROBJS = $(call srcs2obj, $(EVALUATORSRC))
 #DEPS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.d)))
 
 .SECONDARY: $(DEPS)
-.PHONY: all clean evaluator
+.PHONY: all clean evaluator modneighbourhoods modproblems
 
 all: $(TARGET) $(EVALUATORTGT)
 
@@ -57,6 +58,12 @@ $(BUILDDIR)/%.o: src/%.cpp | $(BUILDDIR) $(DEPS)
 
 $(BUILDDIR)/%.d: src/%.cpp
 	$(CXX) -MM -MP $(CXXFLAGS) $(INCLUDES) $< -MF $@
+
+modneighbourhoods:
+	$(MAKE) -C neighbourhoods
+
+modproblems:
+	($MAKE) -C problems
 
 $(BUILDDIR):
 	mkdir -p $@
