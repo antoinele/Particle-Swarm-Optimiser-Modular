@@ -1,5 +1,5 @@
-#include <neighbourhood.h>
-#include <init.h>
+#include <core/neighbourhood.h>
+#include <core/init.h>
 
 #include <iostream>
 
@@ -7,6 +7,7 @@ using namespace pso;
 using namespace std;
 
 class gbest_neighbourhood : public neighbourhood_base {
+public:
 	gbest_neighbourhood();
 };
 

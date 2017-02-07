@@ -1,77 +1,42 @@
-CXX				:= g++-6
-INCLUDES		:= -Isrc -I../packages/Eigen.3.2.9/build/native/include
-CFLAGS			:= -Wall -fopenmp
-CXXFLAGS		:= -std=c++14 -Wall -fopenmp -march=native -mtune=generic
-LDFLAGS			:= -fopenmp -march=native -mtune=generic
-SHAREDSOURCES	:= src/optimiser.cpp src/particle.cpp src/optimiserlogging.cpp src/utilities.cpp
-SOURCES			:= $(SHAREDSOURCES) src/main.cpp
+build-dir = $(patsubst %/,%,$(dir $@))
+target-dir = $(dir $@)
 
-MODULEDIRS		:= src/neighbourhoods src/problems
+INCLUDES := -I../packages/Eigen.3.2.9/build/native/include
 
-EXECUTABLE		:= pso
+build := -f scripts/Makefile.build obj
 
-EVALUATORSRC	:= $(SHAREDSOURCES) src/evaluatorcli.cpp
-EVALUATORBIN	:= evaluator
+all: pso
 
-DEBUGDIR   := bin/Debug
-RELEASEDIR := bin/Release
+core-y				:= core/
+neighbourhoods-y	:= neighbourhoods/
+problems-y			:= problems/
 
-DEBUG ?= 0
-ifeq ($(DEBUG),1)
-	CXXFLAGS += -DDEBUG -g
-	BUILDDIR := $(DEBUGDIR)
-else
-	CXXFLAGS += -DNDEBUG -O3 -g
-	LDFLAGS += -flto -O3
-	BUILDDIR := $(RELEASEDIR)
-endif
+pso-dirs := $(patsubst %/,%,$(filter %/, $(core-y) $(neighbourhoods-y) $(problems-y)))
 
-TARGET := $(BUILDDIR)/$(EXECUTABLE)
-EVALUATORTGT := $(BUILDDIR)/$(EVALUATORBIN)
+pso-alldirs := $(sort $(pso-dirs) $(patsubst %/,%,$(filter %/, $(core-) $(neighbourhoods-y) $(problems-y))))
 
-srcs2obj = $(addprefix $(BUILDDIR)/,$(subst src/,,$(patsubst %.cpp,%.o,$(1))))
-srcs2d   = $(addprefix $(BUILDDIR)/,$(subst src/,,$(patsubst %.cpp,%.d,$(1))))
+core-y				:= $(patsubst %/, %/built-in.o, $(core-y))
+neighbourhoods-y	:= $(patsubst %/, %/built-in.o, $(neighbourhoods-y))
+problems-y			:= $(patsubst %/, %/built-in.o, $(problems-y))
 
-OBJECTS	= $(call srcs2obj, $(SOURCES))
-DEPS	= $(call srcs2d, $(SOURCES))
+export PSO_MAIN := $(core-y) $(neighbourhoods-y) $(problems-y)
 
-EVALUATOROBJS = $(call srcs2obj, $(EVALUATORSRC))
+export CXXFLAGS := -I. $(INCLUDES) -std=c++14 -O3 -Wall -fopenmp -march=native -mtune=generic
+#export LDFLAGS  := -fopenmp -march=native -mtune=generic -flto -O3
+export LDFLAGS := -flto
 
-#OBJECTS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.o)))
-#DEPS	= $(addprefix $(BUILDDIR)/,$(subst src/,,$(SOURCES:.cpp=.d)))
+pso: $(PSO_MAIN)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
-.SECONDARY: $(DEPS)
-.PHONY: all clean evaluator modneighbourhoods modproblems
+PHONY += $(pso-dirs)
+$(pso-dirs):
+	$(MAKE) $(build)=$@
 
-all: $(TARGET) $(EVALUATORTGT)
+$(sort $(PSO_MAIN)): $(pso-dirs) ;
 
-evaluator: $(EVALUATORTGT)
+%.o: %.cpp
+	$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
+%.o: %.c
+	$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 
-$(TARGET): $(OBJECTS) | $(BUILDDIR)
-	$(CXX) $(LDFLAGS) $^ -o $@
-
-$(EVALUATORTGT): $(EVALUATOROBJS) | $(BUILDDIR)
-	$(CXX) $(LDFLAGS) $^ -o $@
-
-$(BUILDDIR)/%.o: src/%.cpp | $(BUILDDIR) $(DEPS)
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $< -o $@
-
-$(BUILDDIR)/%.d: src/%.cpp
-	$(CXX) -MM -MP $(CXXFLAGS) $(INCLUDES) $< -MF $@
-
-modneighbourhoods:
-	$(MAKE) -C neighbourhoods
-
-modproblems:
-	($MAKE) -C problems
-
-$(BUILDDIR):
-	mkdir -p $@
-
-clean:
-	-rm -f $(OBJECTS) $(DEPS) $(TARGET) $(EVALUATOROBJS) $(EVALUATORTGT)
-	-rmdir -p $(BUILDDIR)
-
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean)))
-	include $(DEPS)
-endif
+.PHONY: $(PHONY)

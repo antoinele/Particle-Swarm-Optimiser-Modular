@@ -1,0 +1,1 @@
+obj-y += g_best.o

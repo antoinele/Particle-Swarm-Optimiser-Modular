@@ -1,5 +1,5 @@
-#include <problem.h>
-#include <init.h>
+#include <core/problem.h>
+#include <core/init.h>
 
 #include <iostream>
 
@@ -13,21 +13,21 @@ using namespace pso;
 class sphereproblem : public problem_base
 {
 private:
-	const int n_dimensions;
+	const size_t n_dimensions;
 	vector<vector<double>> _bounds;
 public:
-	sphereproblem(int n_dimensions);
-	virtual vector<vector<double>> bounds();
-	virtual bool is_valid(pso::coordinate c);
-	virtual double evaluate(pso::coordinate c);
+	sphereproblem(size_t n_dimensions);
+	vector<vector<double>> bounds();
+	bool is_valid(pso::coordinate c);
+	double evaluate(const pso::coordinate& c);
 
-	virtual inline bool comparator(const double a, const double b)
+	virtual bool comparator(const double a, const double b)
 	{
 		return a < b;
 	}
 };
 
-sphereproblem::sphereproblem(int n_dimensions) : n_dimensions(n_dimensions)
+sphereproblem::sphereproblem(size_t n_dimensions) : problem_base(), n_dimensions(n_dimensions)
 {
 	for (size_t i = 0; i < n_dimensions; i++)
 	{
@@ -54,7 +54,7 @@ bool sphereproblem::is_valid(coordinate c)
 	return true;
 }
 
-double sphereproblem::evaluate(coordinate c)
+double sphereproblem::evaluate(const coordinate& c)
 {
 	assert(c.size() == n_dimensions);
 
@@ -98,7 +98,7 @@ shared_ptr<pso::problem_base> sphereproblem_factory(vector<string> args)
 		}
 	}
 
-	return make_shared<pso::problem_base>(n_dimensions);
+	return make_shared<sphereproblem>(n_dimensions);
 }
 
 void sphereproblem_init()

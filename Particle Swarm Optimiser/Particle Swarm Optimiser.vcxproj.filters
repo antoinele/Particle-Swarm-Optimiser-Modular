@@ -18,61 +18,74 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\optimiser.h">
+    <ClInclude Include="core\init.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\particle.h">
+    <ClInclude Include="core\neighbourhood.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\psotypes.h">
+    <ClInclude Include="core\optimiser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utilities.h">
+    <ClInclude Include="core\optimiserlogging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\optimiserlogging.h">
+    <ClInclude Include="core\particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\problem.h">
+    <ClInclude Include="core\problem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\init.h">
+    <ClInclude Include="core\psotypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\neighbourhood.h">
+    <ClInclude Include="core\utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\optimiser.cpp">
+    <ClCompile Include="neighbourhoods\g_best.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\particle.cpp">
+    <ClCompile Include="neighbourhoods\Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utilities.cpp">
+    <ClCompile Include="problems\sphereproblem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\optimiserlogging.cpp">
+    <ClCompile Include="core\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\neighbourhood.cpp">
+    <ClCompile Include="core\Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\problems\sphereproblem.cpp">
+    <ClCompile Include="core\neighbourhood.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\neighbourhoods\g_best.cpp">
+    <ClCompile Include="core\optimiser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\neighbourhoods\Makefile">
+    <ClCompile Include="core\optimiserlogging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="problems\Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="scripts\Makefile.build" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="scripts\Makefile.lib" />
   </ItemGroup>
 </Project>

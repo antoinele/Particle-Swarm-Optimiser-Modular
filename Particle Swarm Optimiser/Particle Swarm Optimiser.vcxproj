@@ -72,19 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)src;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -170,28 +170,47 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\neighbourhood.h" />
-    <ClInclude Include="src\init.h" />
-    <ClInclude Include="src\optimiserlogging.h" />
-    <ClInclude Include="src\utilities.h" />
-    <ClInclude Include="src\problem.h" />
-    <ClInclude Include="src\psotypes.h" />
-    <ClInclude Include="src\optimiser.h" />
-    <ClInclude Include="src\particle.h" />
+    <ClInclude Include="core\neighbourhood.h" />
+    <ClInclude Include="core\init.h" />
+    <ClInclude Include="core\optimiserlogging.h" />
+    <ClInclude Include="core\utilities.h" />
+    <ClInclude Include="core\problem.h" />
+    <ClInclude Include="core\psotypes.h" />
+    <ClInclude Include="core\optimiser.h" />
+    <ClInclude Include="core\particle.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\neighbourhoods\g_best.cpp" />
-    <ClCompile Include="src\neighbourhoods\Makefile" />
-    <ClCompile Include="src\problems\sphereproblem.cpp" />
-    <ClCompile Include="src\neighbourhood.cpp" />
-    <ClCompile Include="src\optimiserlogging.cpp" />
-    <ClCompile Include="src\utilities.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\optimiser.cpp" />
-    <ClCompile Include="src\particle.cpp" />
+    <Text Include="core\Makefile">
+      <FileType>CppCode</FileType>
+    </Text>
+    <ClCompile Include="neighbourhoods\g_best.cpp" />
+    <Text Include="neighbourhoods\Makefile">
+      <FileType>CppCode</FileType>
+    </Text>
+    <Text Include="Makefile">
+      <FileType>CppCode</FileType>
+    </Text>
+    <Text Include="problems\Makefile">
+      <FileType>CppCode</FileType>
+    </Text>
+    <ClCompile Include="problems\sphereproblem.cpp" />
+    <ClCompile Include="core\neighbourhood.cpp" />
+    <ClCompile Include="core\optimiserlogging.cpp" />
+    <ClCompile Include="core\utilities.cpp" />
+    <ClCompile Include="core\main.cpp" />
+    <ClCompile Include="core\optimiser.cpp" />
+    <ClCompile Include="core\particle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Text Include="scripts\Makefile.build">
+      <FileType>Document</FileType>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="scripts\Makefile.lib">
+      <FileType>Document</FileType>
+    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,8 +7,8 @@
 
 #include <Eigen/Dense>
 
-#include "utilities.h"
-#include "optimiser.h"
+#include <core/utilities.h>
+#include <core/optimiser.h>
 
 using namespace std;
 using namespace pso;
@@ -84,11 +84,6 @@ VectorXd pso::particle::find_gbest_position()
 	return VectorXd::Map(opt->g_best.data(), opt->g_best.size());
 }
 
-inline VectorXd pso::particle::find_lbest()
-{
-	return opt->_neighbourhood->find_lbest(this);
-}
-
 void particle::move_step()
 {
 	double c1, c2, r1, r2;
@@ -152,7 +147,3 @@ void particle::end_step()
 	}
 }
 
-inline double pso::particle::evaluate()
-{
-	return opt->evaluator(position());
-}

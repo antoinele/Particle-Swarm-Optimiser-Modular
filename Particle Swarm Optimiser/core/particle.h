@@ -1,12 +1,12 @@
-#ifndef PARTICLE_H
-#define PARTICLE_H
+#pragma once
+
+#include <core/optimiser.h>
+#include <core/psotypes.h>
+#include <core/utilities.h>
+#include <Eigen/Dense>
 
 #include <vector>
 #include <limits>
-
-#include "psotypes.h"
-#include "utilities.h"
-#include <Eigen/Dense>
 
 namespace {
 	using namespace std;
@@ -15,8 +15,6 @@ namespace {
 }
 
 namespace pso {
-
-	class optimiser;
 
     class particle
     {
@@ -29,7 +27,10 @@ namespace pso {
         VectorXd find_nbest_position();
 		VectorXd find_gbest_position();
 
-		inline VectorXd find_lbest();
+		inline VectorXd find_lbest()
+		{
+			return opt->_neighbourhood->find_lbest(this);
+		}
 
         VectorXd _velocity;
 		VectorXd _position;
@@ -53,11 +54,12 @@ namespace pso {
         void move_step();
         void end_step();
 
-		inline double evaluate();
+		inline double evaluate()
+		{
+			return opt->evaluator(position());
+		}
 
         particle(optimiser* optimiser);
 		particle(optimiser* optimiser, coordinate position, coordinate velocity);
     };
 }
-
-#endif

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <psotypes.h>
-#include <problem.h>
-#include <neighbourhood.h>
-#include <optimiserlogging.h>
+#include <core/psotypes.h>
+#include <core/problem.h>
+#include <core/neighbourhood.h>
+#include <core/optimiserlogging.h>
 
 #include <vector>
 #include <atomic>

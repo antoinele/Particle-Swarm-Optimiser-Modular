@@ -1,15 +1,15 @@
+#include <core/psotypes.h>
+#include <core/optimiser.h>
+#include <core/utilities.h>
+
+#include <core/init.h>
+#include <core/problem.h>
+#include <core/neighbourhood.h>
+
 #include <iostream>
 #include <fstream>
 #include <csignal>
 #include <map>
-
-#include "psotypes.h"
-#include "optimiser.h"
-#include "utilities.h"
-
-#include <init.h>
-#include <problem.h>
-#include <neighbourhood.h>
 
 using namespace std;
 using namespace pso;

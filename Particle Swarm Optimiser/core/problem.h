@@ -1,6 +1,7 @@
 #pragma once
 
-#include <psotypes.h>
+#include <core/psotypes.h>
+
 #include <cassert>
 #include <string>
 #include <memory>
@@ -17,6 +18,8 @@ namespace pso {
 	typedef shared_ptr<pso::problem_base>(*problemfactory)(vector<string> args);
 
 	class problem_base {
+	protected:
+		problem_base() {};
 	public:
 		virtual vector<vector<double>> bounds() = 0;
 		virtual bool is_valid(coordinate c) {
