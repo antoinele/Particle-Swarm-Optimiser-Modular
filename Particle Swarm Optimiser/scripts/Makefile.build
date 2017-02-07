@@ -17,6 +17,7 @@ subdir-ccflags-y :=
 # load directory's Makefile
 include $(src)/Makefile
 
+include scripts/Makefile.include
 include scripts/Makefile.lib
 
 targets += $(real-objs-y)
@@ -35,7 +36,7 @@ __build: $(builtin-target)
 
 PHONY += $(subdir-ym)
 $(subdir-ym):
-	$(MAKE) -f scripts/Makefile.build obj=$@
+	$(MAKE) $(build)=$@
 
 $(obj)/%.o: $(src)/%.c
 	$(CC) -c $(CFLAGS) $< -o $@

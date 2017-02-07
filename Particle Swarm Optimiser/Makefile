@@ -3,7 +3,7 @@ target-dir = $(dir $@)
 
 INCLUDES := -I../packages/Eigen.3.2.9/build/native/include
 
-build := -f scripts/Makefile.build obj
+include scripts/Makefile.include
 
 all: pso
 
@@ -33,6 +33,14 @@ $(pso-dirs):
 	$(MAKE) $(build)=$@
 
 $(sort $(PSO_MAIN)): $(pso-dirs) ;
+
+clean-dirs		:= $(addprefix _clean_, . $(pso-alldirs))
+
+PHONY += $(clean-dirs) clean
+$(clean-dirs):
+	$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
+
+clean: $(clean-dirs)
 
 %.o: %.cpp
 	$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)

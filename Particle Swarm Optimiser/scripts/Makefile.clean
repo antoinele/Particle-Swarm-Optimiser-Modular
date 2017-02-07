@@ -1,0 +1,31 @@
+src := $(obj)
+
+PHONY := __clean
+__clean:
+
+include scripts/Makefile.include
+
+include $(src)/Makefile
+
+__subdir-y		:= $(patsubst %/,%,$(filter %/, $(obj-y)))
+subdir-y		+= $(__subdir-y);
+
+subdir-ym		:= $(sort $(subdir-y))
+
+__clean-files	:= $(extra-y) $(targets) $(clean-files)
+
+__clean-files	:= $(wildcard $(addprefix $(obj)/, $(__clean-files)))
+
+__clean-dirs	:= $(wildcard $(addprefix $(obj)/, $(__clean-dirs)))
+
+__clean: $(subdir-ym)
+ifneq ($(strip $(__clean-files)),)
+	echo rm -f $(__clean-files);
+endif
+ifneq ($(strip %(__clean-dirs)),)
+	echo rm -rf $(__clean-dirs)
+endif
+
+PHONY += $(subdir-ym)
+$(subdir-ym):
+	$(MAKE) $(clean)=$@

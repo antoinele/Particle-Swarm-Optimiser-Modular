@@ -1,0 +1,4 @@
+
+build := -f scripts/Makefile.build obj
+
+clean := -f scripts/Makefile.clean obj
