@@ -30,13 +30,13 @@ builtin-target := $(obj)/built-in.o
 targets += $(buildin-target)
 
 $(builtin-target): $(obj-y) FORCE
-	$(LD) $(LDFLAGS) -r -o $@ $(filter $(obj-y), $^)
+	$(LD) -r -o $@ $(filter $(obj-y), $^)
 
 __build: $(builtin-target)
 
 PHONY += $(subdir-ym)
 $(subdir-ym):
-	$(MAKE) $(build)=$@
+	@$(MAKE) $(build)=$@
 
 $(obj)/%.o: $(src)/%.c
 	$(CC) -c $(CFLAGS) $< -o $@

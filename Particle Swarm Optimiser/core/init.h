@@ -13,22 +13,18 @@ typedef void (*initcall_t)(void);
  * Very likely to be gcc specific behaviour
  * http://www.airs.com/blog/archives/56
  */
-extern initcall_t __start_initcalls[], __stop_initcalls[];
-
 #define module_init(fn) \
-	static initcall_t __initcall_##fn __attribute__((__section__("initcalls"))) __attribute__((__used__)) = fn
+	static initcall_t __initcall_##fn __attribute__((__used__)) __attribute__((__section__("initcalls"))) = fn
 
 #elif _MSC_VER
 
 #pragma section(".initmod$a", read)
-#pragma section(".initmod$u")
+#pragma section(".initmod$u", read)
 #pragma section(".initmod$z", read)
 
-__declspec(allocate(".initmod$a")) initcall_t __start_initcalls_seg;
-__declspec(allocate(".initmod$z")) initcall_t __stop_initcalls_seg;
-
-initcall_t* __start_initcalls = &__start_initcalls_seg;
-initcall_t* __stop_initcalls = &__stop_initcalls_seg;
+//#pragma comment( linker, "/merge:.initmod_a=.initmod" )
+//#pragma comment( linker, "/merge:.initmod_u=.initmod" )
+//#pragma comment( linker, "/merge:.initmod_z=.initmod" )
 
 #define module_init(fn) \
 	__declspec(allocate(".initmod$u")) static initcall_t __initcall_##fn = fn;

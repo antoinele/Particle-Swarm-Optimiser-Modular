@@ -1,14 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <functional>
+#include <Eigen/Dense>
 #include <random>
 
-namespace {
-	using namespace std;
-}
-
 namespace pso {
-	typedef vector<double> coordinate;
-	typedef mt19937_64 pso_rng;
+	typedef Eigen::VectorXd coordinate;
+	typedef std::mt19937_64 pso_rng;
 }

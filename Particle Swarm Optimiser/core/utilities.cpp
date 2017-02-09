@@ -13,7 +13,7 @@ using namespace pso;
 
 coordinate pso::generate_coordinate(const vector<vector<double>> *bounds, pso_rng *gen)
 {
-	coordinate c;
+	coordinate c(bounds->size());
 
 	assert(bounds->size() > 0);
 
@@ -21,7 +21,7 @@ coordinate pso::generate_coordinate(const vector<vector<double>> *bounds, pso_rn
 	{
 		uniform_real_distribution<double> dist((*bounds)[i][0], (*bounds)[i][1]);
 
-		c.push_back(dist(*gen));
+		c(i) = dist(*gen);
 	}
 
 	return c;
@@ -46,7 +46,8 @@ VectorXd pso::coordinateToVectorXd(const coordinate* c)
 
 coordinate pso::vectorXdToCoordinate(const Eigen::VectorXd* v)
 {
-	return coordinate(v->data(), v->data() + v->size());
+	return *v;
+	//return coordinate(v->data(), v->data() + v->size());
 
 	//coordinate c(v->size());
 	////c.resize(v->size());
@@ -81,14 +82,13 @@ string pso::coordinateToString(const coordinate * c)
 {
 	assert(c->size() > 0);
 	ostringstream oss;
-	//copy(c->begin(), c->end(), ostream_iterator<double>(oss, ", "));
+	
+	oss << (*c)(0);
 
-	oss << c->at(0);
-
-	for (auto i=c->begin() + 1; i != c->end(); ++i)
+	for (auto i=0; i < c->size(); ++i)
 	{
 		oss << ", ";
-		oss << *i;
+		oss << (*c)(i);
 	}
 
 	return oss.str();

@@ -8,3 +8,5 @@ void pso::neighbourhood_base::register_neighbourhood(string name, neighbourhoodf
 
 	registered_neighbourhoods[name] = factory;
 }
+
+map<string, neighbourhoodfactory> neighbourhood_base::registered_neighbourhoods;

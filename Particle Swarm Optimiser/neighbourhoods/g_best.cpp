@@ -1,6 +1,8 @@
 #include <core/neighbourhood.h>
 #include <core/init.h>
 
+#include <core/optimiser.h>
+
 #include <iostream>
 
 using namespace pso;
@@ -8,11 +10,14 @@ using namespace std;
 
 class gbest_neighbourhood : public neighbourhood_base {
 public:
-	gbest_neighbourhood();
+	gbest_neighbourhood() {};
+
+	VectorXd find_lbest(particle* p);
 };
 
-gbest_neighbourhood::gbest_neighbourhood() {
-
+VectorXd gbest_neighbourhood::find_lbest(particle* p)
+{
+	return optimiser::get_optimiser_raw()->best_solution().first;
 }
 
 shared_ptr<neighbourhood_base> gbest_factory(vector<string> args) {

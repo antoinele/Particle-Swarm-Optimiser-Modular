@@ -22,12 +22,13 @@ namespace pso {
 		friend class particle;
     private:
 		static shared_ptr<optimiser> instance;
+		static optimiser* instance_raw;
 		shared_ptr<problem_base> _problem;
 		shared_ptr<neighbourhood_base> _neighbourhood;
-		optimiser();
+		optimiser(shared_ptr<problem_base> problem);
 
         vector<shared_ptr<particle>> particles;
-        size_t n_dimensions;
+        size_t _n_dimensions;
 
         void do_cycle();
 		void evaluate_cycle_mt();
@@ -44,12 +45,21 @@ namespace pso {
 
 		uint32_t max_cycles = numeric_limits<uint32_t>::max();
 		uint32_t max_runtime = numeric_limits<uint32_t>::max();
-		double target_fitness;
-		double worst_fitness;
-
+		
 		bool pause = false;
 
     public:
+		double target_fitness;
+		double worst_fitness;
+
+		inline vector<shared_ptr<particle>>* get_particles() {
+			return &particles;
+		}
+
+		inline size_t n_dimensions() {
+			return _n_dimensions;
+		}
+
 		inline double evaluator(coordinate position)
 		{
 			assert(position.size() == _problem->bounds().size());
@@ -91,14 +101,25 @@ namespace pso {
 			return _problem;
 		}
 
-		void set_problem(shared_ptr<problem_base> problem);
-
-		static shared_ptr<optimiser> get_optimiser()
+		static void init_optimiser(shared_ptr<problem_base> problem)
 		{
-			if(!instance)
-				instance = shared_ptr<optimiser>(new optimiser());
-			
+			instance_raw = new optimiser(problem);
+			instance = shared_ptr<optimiser>(instance_raw);
+		}
+
+		static inline shared_ptr<optimiser> get_optimiser()
+		{
+			assert(instance);
+
 			return instance;
+		}
+
+		static inline optimiser* get_optimiser_raw()
+		{
+			// not sure if this will work as instance_raw isn't initialised
+			assert(instance_raw != nullptr);
+
+			return instance_raw;
 		}
 
 		virtual ~optimiser();

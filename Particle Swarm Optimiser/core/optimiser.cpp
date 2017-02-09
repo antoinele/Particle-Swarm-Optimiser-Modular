@@ -19,9 +19,11 @@ using namespace std;
 
 #define CYCLE_SIZE 100
 
-optimiser::optimiser() 
+optimiser* optimiser::instance_raw = nullptr;
+
+optimiser::optimiser(shared_ptr<problem_base> problem) : _problem(problem)
 {
-	n_dimensions = _problem->bounds().size();
+	_n_dimensions = _problem->bounds().size();
 
 	if (comparator(numeric_limits<double>::min(), numeric_limits<double>::max())) {
 		target_fitness = numeric_limits<double>::min();
@@ -40,16 +42,18 @@ optimiser::optimiser()
 optimiser::~optimiser() {
 }
 
+shared_ptr<optimiser> optimiser::instance;
+
 void optimiser::add_solution(coordinate position)
 {
 	auto bounds = _problem->bounds();
 	shared_ptr<pso_rng> rng = thread_rng();
 
-    coordinate velocity;
+    coordinate velocity(bounds.size());
 	uniform_real_distribution<double> dist(-1.0, 1.0);
-    for (size_t i = 0; i < n_dimensions; ++i)
+    for (size_t i = 0; i < _n_dimensions; ++i)
     {
-        velocity.push_back(dist(*rng));
+		velocity(i) = dist(*rng);
     }
 
     add_solution(position, velocity);
@@ -57,7 +61,7 @@ void optimiser::add_solution(coordinate position)
 
 void optimiser::add_solution(coordinate position, coordinate velocity)
 {
-	shared_ptr<particle> particle = make_shared<pso::particle>(this, position, velocity);
+	shared_ptr<particle> particle = make_shared<pso::particle>(position, velocity);
 
 	if (!_problem->is_valid(position)) {
 		cerr << "Invalid solution added" << endl;
@@ -115,11 +119,7 @@ pair<coordinate, double> optimiser::best_solution()
 }
 
 void optimiser::init_simulation() {
-	static bool initialised = false;
-	if (!initialised) {
-		_neighbourhood->init_neighbourhood();
-		initialised = true;
-	}
+	_neighbourhood->init_neighbourhood();
 }
 
 void pso::optimiser::set_neighbourhood(shared_ptr<neighbourhood_base> neighbourhood)
@@ -201,12 +201,6 @@ void pso::optimiser::set_logger(optimiserlogging * logger)
 	this->logger = logger;
 }
 
-void pso::optimiser::set_problem(shared_ptr<problem_base> problem)
-{
-	assert(!_problem); // this shouldn't really be called after the program starts
-	_problem = problem;
-}
-
 void optimiser::do_cycle()
 {
 #pragma omp parallel for num_threads(n_threads)
@@ -220,6 +214,8 @@ void optimiser::do_cycle()
 	{
 		particles[i]->end_step();
 	}
+
+	_neighbourhood->end_cycle();
 
 	evaluate_cycle_mt();
 }
@@ -243,72 +239,6 @@ void pso::optimiser::evaluate_cycle_mt()
 		}
 	}
 }
-
-/*
-void pso::optimiser::evaluate_cycle_mt()
-{
-	static coordinate* cur_best(nullptr);
-	static double cur_best_fitness;
-#pragma omp threadprivate(cur_best, cur_best_fitness)
-
-	cur_best_fitness = worst_fitness;
-
-#if _OPENMP
-	vector<coordinate*> ts_best(n_threads);
-	vector<double> ts_best_fitness(n_threads);
-#endif
-
-#pragma omp parallel for
-	for (int i=0; i<(int)particles.size(); i++)
-	{ // i must be a signed integer for compatibility with VS2015
-		coordinate p = particles[i]->best_position();
-
-		double fitness = evaluator(p);
-
-		//double fitness = particle->evaluate();
-		if (comparator(fitness, g_best_fitness))
-		{
-			if (cur_best != nullptr)
-				delete cur_best;
-			//best_found = particle->position();
-			cur_best = new coordinate(p);
-			cur_best_fitness = fitness;
-		}
-	}
-
-#if _OPENMP
-#pragma omp parallel
-	{
-		int i = omp_get_thread_num();
-
-		ts_best[i] = cur_best;
-		ts_best_fitness[i] = cur_best_fitness;
-		
-		cur_best = nullptr;
-	}
-
-//#pragma omp critical
-	{
-		for (size_t i = 0; i < ts_best_fitness.size(); i++)
-		{
-			if (ts_best[i] == nullptr)
-				continue;
-
-			if (comparator(ts_best_fitness[i], g_best_fitness))
-			{
-				g_best = *ts_best[i];
-				g_best_fitness = ts_best_fitness[i];
-			}
-
-			delete ts_best[i];
-		}
-	}
-#else
-	g_best = *cur_best;
-	g_best_fitness = cur_best_fitness;
-#endif
-}
-*/
 
 shared_ptr<pso_rng> pso::optimiser::thread_rng()
 {

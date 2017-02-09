@@ -22,14 +22,9 @@ namespace pso {
 		size_t n_dimensions;
 		vector<vector<double>> bounds;
 
-		optimiser* opt;
-
-        VectorXd find_nbest_position();
-		VectorXd find_gbest_position();
-
 		inline VectorXd find_lbest()
 		{
-			return opt->_neighbourhood->find_lbest(this);
+			return optimiser::get_optimiser_raw()->_neighbourhood->find_lbest(this);
 		}
 
         VectorXd _velocity;
@@ -56,10 +51,10 @@ namespace pso {
 
 		inline double evaluate()
 		{
-			return opt->evaluator(position());
+			return optimiser::get_optimiser_raw()->evaluator(position());
 		}
 
-        particle(optimiser* optimiser);
-		particle(optimiser* optimiser, coordinate position, coordinate velocity);
+        particle();
+		particle(coordinate position, coordinate velocity);
     };
 }

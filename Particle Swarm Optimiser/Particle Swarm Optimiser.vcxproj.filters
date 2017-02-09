@@ -16,6 +16,13 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="scripts\Makefile.include" />
+    <Text Include="core\Makefile" />
+    <Text Include="neighbourhoods\Makefile" />
+    <Text Include="Makefile" />
+    <Text Include="problems\Makefile" />
+    <Text Include="scripts\Makefile.build" />
+    <Text Include="scripts\Makefile.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\init.h">
@@ -44,22 +51,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Makefile">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="neighbourhoods\g_best.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="neighbourhoods\Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="problems\sphereproblem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\Makefile">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\neighbourhood.cpp">
@@ -77,15 +75,15 @@
     <ClCompile Include="core\utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="problems\Makefile">
+    <ClCompile Include="core\problem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="neighbourhoods\ring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="scripts\Makefile.build" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="scripts\Makefile.lib" />
+    <None Include="scripts\Makefile.clean" />
   </ItemGroup>
 </Project>

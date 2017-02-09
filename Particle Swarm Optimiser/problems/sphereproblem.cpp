@@ -105,3 +105,5 @@ void sphereproblem_init()
 {
 	problem_base::register_problem("sphereproblem", &sphereproblem_factory);
 }
+
+module_init(sphereproblem_init);

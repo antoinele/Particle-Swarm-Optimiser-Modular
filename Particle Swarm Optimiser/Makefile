@@ -22,29 +22,28 @@ problems-y			:= $(patsubst %/, %/built-in.o, $(problems-y))
 export PSO_MAIN := $(core-y) $(neighbourhoods-y) $(problems-y)
 
 export CXXFLAGS := -I. $(INCLUDES) -std=c++14 -O3 -Wall -fopenmp -march=native -mtune=generic
-#export LDFLAGS  := -fopenmp -march=native -mtune=generic -flto -O3
-export LDFLAGS := -flto
+export LDFLAGS  := -fopenmp -Wl,--undefined,Af -march=native -mtune=generic -flto -O3
 
 pso: $(PSO_MAIN)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
 PHONY += $(pso-dirs)
 $(pso-dirs):
-	$(MAKE) $(build)=$@
+	@$(MAKE) $(build)=$@
 
-$(sort $(PSO_MAIN)): $(pso-dirs) ;
+$(PSO_MAIN): $(pso-dirs) ;
 
 clean-dirs		:= $(addprefix _clean_, . $(pso-alldirs))
 
 PHONY += $(clean-dirs) clean
 $(clean-dirs):
-	$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
+	@$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
 
 clean: $(clean-dirs)
 
 %.o: %.cpp
-	$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
+	@$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 %.o: %.c
-	$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
+	@$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 
 .PHONY: $(PHONY)

@@ -26,9 +26,8 @@ namespace pso {
 		neighbourhood_base() {};
 	public:
 		virtual void init_neighbourhood() {};
-		virtual VectorXd find_lbest(particle* p) {
-			return VectorXd();
-		};
+		virtual VectorXd find_lbest(particle* p) = 0;
+		virtual void end_cycle() {};
 
 		static map<string, neighbourhoodfactory> registered_neighbourhoods;
 		static void register_neighbourhood(string name, neighbourhoodfactory factory);

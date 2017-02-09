@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="scripts\Makefile.include" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\neighbourhood.h" />
@@ -183,6 +184,7 @@
     <Text Include="core\Makefile">
       <FileType>CppCode</FileType>
     </Text>
+    <ClCompile Include="core\problem.cpp" />
     <ClCompile Include="neighbourhoods\g_best.cpp" />
     <Text Include="neighbourhoods\Makefile">
       <FileType>CppCode</FileType>
@@ -193,6 +195,7 @@
     <Text Include="problems\Makefile">
       <FileType>CppCode</FileType>
     </Text>
+    <ClCompile Include="neighbourhoods\ring.cpp" />
     <ClCompile Include="problems\sphereproblem.cpp" />
     <ClCompile Include="core\neighbourhood.cpp" />
     <ClCompile Include="core\optimiserlogging.cpp" />
@@ -203,6 +206,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="scripts\Makefile.clean" />
     <Text Include="scripts\Makefile.build">
       <FileType>Document</FileType>
     </Text>

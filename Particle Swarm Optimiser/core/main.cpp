@@ -11,6 +11,19 @@
 #include <csignal>
 #include <map>
 
+/**
+ * Modules markers
+ */
+#ifdef __GNUC__
+extern const initcall_t __start_initcalls[], __stop_initcalls[];
+#elif _MSC_VER
+__declspec(allocate(".initmod$a")) initcall_t __start_initcalls_seg;
+__declspec(allocate(".initmod$z")) initcall_t __stop_initcalls_seg;
+
+#define __start_initcalls &__start_initcalls_seg
+#define __stop_initcalls &__stop_initcalls_seg
+#endif
+
 using namespace std;
 using namespace pso;
 
@@ -52,16 +65,19 @@ void signalhandler(int sig)
 }
 
 void do_initcalls() {
-	for (initcall_t* fn = __start_initcalls; fn < __stop_initcalls; fn++)
+	vector<initcall_t> initcalls(__start_initcalls, __stop_initcalls);
+
+	for(initcall_t fn : initcalls)
 	{
 		/**
 		 * Windows executable sections are 256 byte aligned and zero padded
-		 * so check if the pointer isn't 0 before calling.
+		 * meaning most of the pointers are 0, so check if the pointer
+		 * isn't 0 before calling.
 		 */
 #ifdef _MSC_VER
-		if(fn != 0)
+		if(fn != (initcall_t)0)
 #endif
-			(*fn)();
+			fn();
 	}
 }
 
@@ -141,12 +157,16 @@ int main(int argc, char const *argv[])
 				else if (strcmp(argv[i], "-N") == 0)
 				{
 					argparsestate = NEIGHBOURHOOD;
-					neighbourhood_name = argv[++i];
+					i++;
+					if(i < argc)
+						neighbourhood_name = argv[i];
 				}
 				else if (strcmp(argv[i], "-P") == 0)
 				{
 					argparsestate = PROBLEM;
-					problem_name = argv[++i];
+					i++;
+					if(i < argc)
+						problem_name = argv[i];
 				}
 				else {
 					cerr << "Unknown argument: " << argv[i] << endl;
@@ -158,7 +178,9 @@ int main(int argc, char const *argv[])
 				if (strcmp(argv[i], "-P") == 0)
 				{
 					argparsestate = PROBLEM;
-					problem_name = argv[++i];
+					i++;
+					if(i < argc)
+						problem_name = argv[i];
 				}
 				else
 				{
@@ -169,7 +191,9 @@ int main(int argc, char const *argv[])
 				if (strcmp(argv[i], "-N") == 0)
 				{
 					argparsestate = NEIGHBOURHOOD;
-					neighbourhood_name = argv[++i];
+					i++;
+					if(i < argc)
+						neighbourhood_name = argv[i];
 				}
 				else
 				{
@@ -236,8 +260,8 @@ int main(int argc, char const *argv[])
 	}
 
 	// Configure opt
+	optimiser::init_optimiser(problem);
     opt = optimiser::get_optimiser();
-	opt->set_problem(problem);
 	opt->set_neighbourhood(neighbourhood);
 	optimiserlogging logger(opt);
 	if(seed) opt->set_seed(seed);
@@ -265,6 +289,8 @@ int main(int argc, char const *argv[])
 	opt->set_max_cycles(max_cycles);
 	opt->set_max_runtime(max_runtime);
 	opt->set_target_fitness(target_fitness);
+
+	opt->init_simulation();
 
 	// Loop to optionally continue after completion
 	while (1) {
