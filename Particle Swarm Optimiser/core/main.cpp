@@ -11,19 +11,6 @@
 #include <csignal>
 #include <map>
 
-/**
- * Modules markers
- */
-#ifdef __GNUC__
-extern const initcall_t __start_initcalls[], __stop_initcalls[];
-#elif _MSC_VER
-__declspec(allocate(".initmod$a")) initcall_t __start_initcalls_seg;
-__declspec(allocate(".initmod$z")) initcall_t __stop_initcalls_seg;
-
-#define __start_initcalls &__start_initcalls_seg
-#define __stop_initcalls &__stop_initcalls_seg
-#endif
-
 using namespace std;
 using namespace pso;
 

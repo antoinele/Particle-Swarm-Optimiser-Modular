@@ -196,6 +196,7 @@
       <FileType>CppCode</FileType>
     </Text>
     <ClCompile Include="neighbourhoods\ring.cpp" />
+    <ClCompile Include="neighbourhoods\wheel.cpp" />
     <ClCompile Include="problems\sphereproblem.cpp" />
     <ClCompile Include="core\neighbourhood.cpp" />
     <ClCompile Include="core\optimiserlogging.cpp" />

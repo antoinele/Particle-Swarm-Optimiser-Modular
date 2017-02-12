@@ -37,7 +37,7 @@ VectorXd ring::find_lbest(particle* p)
 {
 	auto opt = optimiser::get_optimiser_raw();
 
-	VectorXd* cur_best_position = nullptr;
+	particle* best_particle = nullptr;
 	double cur_best_fitness = opt->worst_fitness;
 
 	assert(p->neighbours.size() > 0);
@@ -49,11 +49,13 @@ VectorXd ring::find_lbest(particle* p)
 		if (opt->comparator(fitness, cur_best_fitness))
 		{
 			cur_best_fitness = fitness;
-			cur_best_position = &(i->best_position());
+			best_particle = i;
 		}
 	}
 
-	return *cur_best_position;
+	assert(best_particle != nullptr);
+
+	return best_particle->best_position();
 }
 
 shared_ptr<neighbourhood_base> ring_factory(vector<string> args)

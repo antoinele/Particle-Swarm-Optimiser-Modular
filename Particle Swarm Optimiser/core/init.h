@@ -7,6 +7,9 @@ typedef void (*initcall_t)(void);
 
 #ifdef __GNUC__
 
+extern const initcall_t* __start_initcalls;
+extern const initcall_t* __stop_initcalls;
+
 /**
  * Using __start_initcalls and __stop_initcalls instead of creating a linker script to get pointers to the
  * user defined initcalls section
@@ -25,6 +28,12 @@ typedef void (*initcall_t)(void);
 //#pragma comment( linker, "/merge:.initmod_a=.initmod" )
 //#pragma comment( linker, "/merge:.initmod_u=.initmod" )
 //#pragma comment( linker, "/merge:.initmod_z=.initmod" )
+
+__declspec(allocate(".initmod$a")) static initcall_t __start_initcalls_seg;
+__declspec(allocate(".initmod$z")) static initcall_t __stop_initcalls_seg;
+
+#define __start_initcalls (&__start_initcalls_seg)
+#define __stop_initcalls (&__stop_initcalls_seg)
 
 #define module_init(fn) \
 	__declspec(allocate(".initmod$u")) static initcall_t __initcall_##fn = fn;

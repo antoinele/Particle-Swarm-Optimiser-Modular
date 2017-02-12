@@ -21,10 +21,10 @@ __clean-dirs	:= $(wildcard $(addprefix $(obj)/, $(__clean-dirs)))
 __clean: $(subdir-ym)
 	echo $(obj-y)
 ifneq ($(strip $(__clean-files)),)
-	echo rm -f $(__clean-files);
+	rm -f $(__clean-files);
 endif
-ifneq ($(strip %(__clean-dirs)),)
-	echo rm -rf $(__clean-dirs)
+ifneq ($(strip $(__clean-dirs)),)
+	rm -rf $(__clean-dirs)
 endif
 
 PHONY += $(subdir-ym)
