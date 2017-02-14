@@ -19,7 +19,6 @@ __clean-files	:= $(wildcard $(addprefix $(obj)/, $(__clean-files)))
 __clean-dirs	:= $(wildcard $(addprefix $(obj)/, $(__clean-dirs)))
 
 __clean: $(subdir-ym)
-	echo $(obj-y)
 ifneq ($(strip $(__clean-files)),)
 	rm -f $(__clean-files);
 endif
@@ -30,3 +29,5 @@ endif
 PHONY += $(subdir-ym)
 $(subdir-ym):
 	@$(MAKE) $(clean)=$@
+
+.PHONY: $(PHONY)

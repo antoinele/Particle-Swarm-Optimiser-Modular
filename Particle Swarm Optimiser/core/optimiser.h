@@ -66,9 +66,9 @@ namespace pso {
 			return _problem->evaluate(position);
 		}
 		// Return true if A is better than B
-		inline bool comparator(const double a, const double b)
+		static inline bool comparator(const double a, const double b)
 		{
-			return _problem->comparator(a, b);
+			return a < b;
 		}
 
 		shared_ptr<pso_rng> thread_rng();
@@ -79,6 +79,7 @@ namespace pso {
 		vector<coordinate> get_solutions();
 
 		void set_seed(const uint64_t seed);
+		uint64_t get_seed();
 
         pair<coordinate, double> best_solution();
 

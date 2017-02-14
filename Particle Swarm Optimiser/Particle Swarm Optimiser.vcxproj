@@ -195,6 +195,7 @@
     <Text Include="problems\Makefile">
       <FileType>CppCode</FileType>
     </Text>
+    <ClCompile Include="neighbourhoods\heirarchical.cpp" />
     <ClCompile Include="neighbourhoods\ring.cpp" />
     <ClCompile Include="neighbourhoods\wheel.cpp" />
     <ClCompile Include="problems\sphereproblem.cpp" />

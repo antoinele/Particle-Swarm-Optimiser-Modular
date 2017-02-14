@@ -95,6 +95,11 @@ void pso::optimiser::set_seed(const uint64_t seed)
 	seed_count = 0;
 }
 
+uint64_t pso::optimiser::get_seed()
+{
+	return seed;
+}
+
 pair<coordinate, double> optimiser::best_solution()
 {
     double best_fitness(g_best_fitness);

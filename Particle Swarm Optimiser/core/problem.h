@@ -5,6 +5,7 @@
 #include <cassert>
 #include <string>
 #include <memory>
+#include <functional>
 #include <map>
 
 namespace {
@@ -15,7 +16,7 @@ namespace pso {
 
 	class problem_base;
 
-	typedef shared_ptr<pso::problem_base>(*problemfactory)(vector<string> args);
+	typedef function<shared_ptr<pso::problem_base>(vector<string> args)> problemfactory;
 
 	class problem_base {
 	protected:
@@ -38,12 +39,6 @@ namespace pso {
 		};
 
 		virtual double evaluate(const coordinate&) = 0;
-
-		/**
-		 * Returning true means that a is better than b
-		 * Returning false means that b is better than a
-		 */
-		virtual bool comparator(const double a, const double b) = 0;
 
 		static std::map<string, problemfactory> registered_problems;
 		static void register_problem(string name, problemfactory factory)

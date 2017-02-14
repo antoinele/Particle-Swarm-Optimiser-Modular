@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include <string>
 #include <memory>
+#include <functional>
 #include <map>
 
 namespace {
@@ -18,7 +19,7 @@ namespace pso {
 	class neighbourhood_base;
 	class particle;
 
-	typedef shared_ptr<neighbourhood_base>(*neighbourhoodfactory)(vector<string> args);
+	typedef function<shared_ptr<neighbourhood_base>(vector<string> args)> neighbourhoodfactory;
 
 	class neighbourhood_base
 	{
